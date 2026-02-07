@@ -1,0 +1,20 @@
+{
+  "name": "cli-npm",
+  "version": "11.8.0",
+  "description": "Command reference plugin for npm CLI",
+  "keywords": [
+    "npm",
+    "access",
+    "level",
+    "published",
+    "packages",
+    "registry"
+  ],
+  "author": {
+    "name": "Nuno Salvacao",
+    "email": "nuno.salvacao@gmail.com",
+    "url": "https://github.com/nsalvacao"
+  },
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

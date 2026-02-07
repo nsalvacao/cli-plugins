@@ -1,0 +1,20 @@
+{
+  "name": "cli-claude-flow",
+  "version": "3.1.0-alpha.3",
+  "description": "Command reference plugin for claude-flow CLI",
+  "keywords": [
+    "claude-flow",
+    "agent",
+    "management",
+    "commands",
+    "analyze",
+    "claude"
+  ],
+  "author": {
+    "name": "Nuno Salvacao",
+    "email": "nuno.salvacao@gmail.com",
+    "url": "https://github.com/nsalvacao"
+  },
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

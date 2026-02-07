@@ -1,0 +1,17 @@
+output/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+*.egg-info/
+dist/
+build/
+.claude-flow/
+.swarm/
+.mcp.json
+uv.lock
+CLAUDE.md
+.claude/
+Levantamento_Planeamento.md
+Requisitos.md
+crystalline-imagining-forest.md

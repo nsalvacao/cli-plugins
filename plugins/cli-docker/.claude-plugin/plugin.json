@@ -1,0 +1,20 @@
+{
+  "name": "cli-docker",
+  "version": "29.2.0",
+  "description": "Command reference plugin for docker CLI",
+  "keywords": [
+    "docker",
+    "attach",
+    "local",
+    "standard",
+    "input",
+    "output"
+  ],
+  "author": {
+    "name": "Nuno Salvacao",
+    "email": "nuno.salvacao@gmail.com",
+    "url": "https://github.com/nsalvacao"
+  },
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

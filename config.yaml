@@ -1,0 +1,43 @@
+defaults:
+  timeout: 5
+  max_depth: 5
+  max_concurrent: 5
+  retry: 1
+  environment: wsl
+  raw_threshold: 10240
+
+clis:
+  git:
+    group: version-control
+  docker:
+    group: containers
+  gh:
+    group: development
+    plugins:
+      discovery_command: gh extension list
+  npm:
+    group: package-managers
+  uv:
+    group: package-managers
+  pip:
+    group: package-managers
+  claude-flow:
+    max_depth: 6
+    group: ai-agents
+  codex:
+    group: ai-agents
+  copilot:
+    group: ai-agents
+  gemini:
+    environment: windows
+    group: ai-agents
+  gcloud:
+    environment: windows
+    group: cloud
+  ag-kit:
+    group: ai-agents
+  specify:
+    group: development
+  langchain:
+    environment: windows
+    group: ai-agents

@@ -1,0 +1,20 @@
+{
+  "name": "cli-gh",
+  "version": "2.86.0",
+  "description": "Command reference plugin for gh CLI",
+  "keywords": [
+    "gh",
+    "working",
+    "with",
+    "agent",
+    "tasks",
+    "github"
+  ],
+  "author": {
+    "name": "Nuno Salvacao",
+    "email": "nuno.salvacao@gmail.com",
+    "url": "https://github.com/nsalvacao"
+  },
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

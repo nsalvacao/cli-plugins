@@ -1,0 +1,20 @@
+{
+  "name": "cli-langchain",
+  "version": "0.0.37",
+  "description": "Command reference plugin for langchain CLI",
+  "keywords": [
+    "langchain",
+    "manage",
+    "apps",
+    "develop",
+    "integration",
+    "packages"
+  ],
+  "author": {
+    "name": "Nuno Salvacao",
+    "email": "nuno.salvacao@gmail.com",
+    "url": "https://github.com/nsalvacao"
+  },
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

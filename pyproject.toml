@@ -1,0 +1,39 @@
+[project]
+name = "cli-plugins"
+version = "0.1.0"
+description = "Crawl CLI --help outputs and generate Claude Code plugins with expert command knowledge"
+requires-python = ">=3.11"
+dependencies = []
+license = "MIT"
+readme = "docs/README.md"
+keywords = [
+    "cli", "crawler", "claude-code", "plugin", "ai-agent",
+    "llm", "help-parser", "cli-reference", "code-assistant",
+    "developer-tools", "openapi-for-cli",
+]
+authors = [
+    { name = "Nuno Salvacao", email = "nuno.salvacao@gmail.com" },
+]
+
+[project.urls]
+Homepage = "https://github.com/nsalvacao/cli-plugins"
+Repository = "https://github.com/nsalvacao/cli-plugins"
+Issues = "https://github.com/nsalvacao/cli-plugins/issues"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.scripts]
+cli-crawler = "cli_crawler:main"
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

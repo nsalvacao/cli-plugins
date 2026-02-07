@@ -1,0 +1,11 @@
+                                                                               
+ Usage: langchain serve [OPTIONS]                                              
+                                                                               
+ Start the LangServe app, whether it's a template or an app.                   
+                                                                               
++- Options -------------------------------------------------------------------+
+| --port        INTEGER  The port to run the server on                        |
+| --host        TEXT     The host to run the server on                        |
+| --help                 Show this message and exit.                          |
++-----------------------------------------------------------------------------+
+
