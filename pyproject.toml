@@ -32,7 +32,12 @@ classifiers = [
 cli-crawler = "cli_crawler:main"
 
 [dependency-groups]
-dev = ["pytest>=8.0"]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.1.0",
+    "black>=23.0.0",
+    "radon>=6.0.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
