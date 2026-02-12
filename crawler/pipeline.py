@@ -15,7 +15,6 @@ from .executor import Executor
 from .formatter import write_output
 from .models import CLIMap, Meta, Flag
 from .parser import parse_help_output
-from .parsers.sections import SectionType
 from .version import detect_version
 
 logger = logging.getLogger("cli_crawler")

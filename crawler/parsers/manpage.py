@@ -8,9 +8,8 @@ with specific indentation patterns.
 from __future__ import annotations
 
 import re
-from typing import Optional
 
-from ..models import Command, Flag, PositionalArg, EnvVar
+from ..models import Command, Flag, EnvVar
 
 # Man page section header: ALL CAPS at column 0
 MANPAGE_SECTION_RE = re.compile(r"^([A-Z][A-Z ]+?)\s*$")

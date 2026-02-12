@@ -177,7 +177,7 @@ def _try_parse_flag(line: str) -> Optional[Flag]:
     # Try rich-click negatable pair: --pip  --no-pip  description
     m = FLAG_RICHCLICK_NEGATABLE_RE.match(line)
     if m:
-        flag1, flag2, desc = m.group(1), m.group(2), m.group(3)
+        flag1, desc = m.group(1), m.group(3)
         # Use the first flag as primary, note the pair in description
         return Flag(
             name=flag1, type="bool",

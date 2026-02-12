@@ -10,7 +10,7 @@ from typing import Optional
 from .config import CLIConfig
 from .detector import detect_subcommand_help
 from .executor import Executor
-from .models import Command, ParseResult
+from .models import Command
 from .parser import parse_help_output
 
 logger = logging.getLogger("cli_crawler.discovery")
