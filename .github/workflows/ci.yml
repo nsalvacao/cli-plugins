@@ -40,4 +40,4 @@ jobs:
 
       - name: Run Code Complexity Analysis (Radon)
         run: |
-          uv run radon cc . -na
+          uv run radon cc . -na -e ".venv*|output*"
