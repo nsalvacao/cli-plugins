@@ -6,7 +6,7 @@ import logging
 
 from .models import Command, ParseResult, Flag, EnvVar, PositionalArg
 from .parsers.sections import segment_help_text, SectionType
-from .parsers.flags import parse_flags_section, extract_env_vars_from_flags
+from .parsers.flags import parse_flags_section
 from .parsers.commands import parse_command_section
 from .parsers.usage import parse_usage, extract_usage_from_text
 from .parsers.examples import parse_examples
