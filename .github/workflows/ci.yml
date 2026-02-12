@@ -1,0 +1,43 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' # Matching project requirements
+
+    - name: Install uv
+      run: |
+        pip install uv
+
+    - name: Install dependencies
+      run: |
+        uv sync
+
+    - name: Run Linting (Ruff)
+      run: |
+        uv run python -m ruff check .
+
+    - name: Run Formatting Check (Black)
+      run: |
+        uv run python -m black --check .
+
+    - name: Run Tests
+      run: |
+        uv run python -m pytest tests/ -v
+
+    - name: Run Code Complexity Analysis (Radon)
+      run: |
+        uv pip install radon
+        uv run radon cc . -na
