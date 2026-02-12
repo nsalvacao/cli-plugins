@@ -56,7 +56,7 @@ class ParsedCommand:
 def parse_command_section(content: str, group: Optional[str] = None) -> list[ParsedCommand]:
     """Parse a commands section, auto-detecting format."""
     lines = content.splitlines()
-    non_empty = [l for l in lines if l.strip()]
+    non_empty = [line for line in lines if line.strip()]
     if not non_empty:
         return []
 

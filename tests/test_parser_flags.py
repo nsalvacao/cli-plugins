@@ -1,6 +1,6 @@
 """Tests for flag/option parsing across all format families."""
 
-from crawler.parsers.flags import parse_flags_section, _try_parse_flag, _extract_choices, _extract_default
+from crawler.parsers.flags import parse_flags_section, _extract_choices, _extract_default
 
 
 class TestFlagParsing:

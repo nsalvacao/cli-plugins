@@ -10,7 +10,6 @@ import pytest
 # Ensure the scripts directory is importable
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from generate_plugin import (
-    Stats,
     build_trigger_phrases,
     compute_stats,
     format_flags_table,
