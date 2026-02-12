@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'python' ] # Assuming Python based on uv sync
+        language: [ 'python' ] # Language determined from pyproject.toml (requires-python)
 
     steps:
       - name: Checkout repository
