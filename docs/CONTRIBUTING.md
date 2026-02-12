@@ -74,9 +74,10 @@ We love new ideas! If you have a feature request, please open an issue on our [G
     git clone https://github.com/nsalvacao/cli-plugins.git
     cd cli-plugins
     ```
-2.  **Install dependencies** using `uv`:
+2.  **Install dependencies** (including dev tools like Ruff/Black) using `uv`:
     ```bash
     uv sync
+    uv sync --group dev  # install dev dependencies (linting/formatting tools)
     ```
 
 ## Code Style Guidelines
