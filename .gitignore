@@ -1,4 +1,5 @@
 output/
+CLAUDE.local.md
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -6,6 +7,8 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+node_modules/
+package-lock.json
 .claude-flow/
 .swarm/
 .mcp.json
