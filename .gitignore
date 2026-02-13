@@ -12,7 +12,6 @@ package-lock.json
 .claude-flow/
 .swarm/
 .mcp.json
-uv.lock
 CLAUDE.md
 .claude/
 Levantamento_Planeamento.md

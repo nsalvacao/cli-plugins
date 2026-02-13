@@ -74,9 +74,10 @@ We love new ideas! If you have a feature request, please open an issue on our [G
     git clone https://github.com/nsalvacao/cli-plugins.git
     cd cli-plugins
     ```
-2.  **Install dependencies** using `uv`:
+2.  **Install dependencies** (including dev tools like Ruff/Black) using `uv`:
     ```bash
     uv sync
+    uv sync --group dev  # install dev dependencies (linting/formatting tools)
     ```
 
 ## Code Style Guidelines
@@ -90,6 +91,7 @@ We adhere to the following code style and quality standards:
 - We use linters and formatters to maintain code consistency. Ensure your code passes all checks before submitting a PR.
     - Run `uv run python -m ruff check .` for linting.
     - Run `uv run python -m black .` for formatting.
+    - These tools are installed as part of the dev dependency group via `uv sync --group dev`.
 
 ## Commit Message Guidelines
 
@@ -110,53 +112,3 @@ We are committed to building a friendly and inclusive community around `cli-plug
 - **Engage**: Participate in discussions, provide feedback on issues and pull requests, and help others.
 - **Share**: If you build something cool with `cli-plugins` (e.g., a new plugin, a useful script, or an integration), share it with the community!
 - **Support**: Help us improve by reporting bugs, suggesting features, and contributing code.
-
-
-## Setup
-
-```bash
-git clone https://github.com/nsalvacao/cli-plugins.git
-cd cli-plugins
-uv sync
-```
-
-## Development Workflow
-
-1. **Make changes** to crawler (`crawler/`) or generator (`scripts/generate_plugin.py`)
-2. **Run tests**: `uv run python -m pytest tests/ -v`
-3. **Test with a real CLI**: `uv run python cli_crawler.py <cli> -o output/<cli>.json -v`
-4. **Generate a plugin**: `uv run python scripts/generate_plugin.py output/<cli>.json`
-5. **Verify the plugin**: inspect generated files in `plugins/cli-<cli>/`
-
-## Adding a New CLI Configuration
-
-Edit `config.yaml`:
-
-```yaml
-clis:
-  new-tool:
-    max_depth: 5
-    group: category-name
-```
-
-Then crawl: `uv run python cli_crawler.py new-tool -o output/new-tool.json -v`
-
-## Adding Test Fixtures
-
-1. Capture raw help text: `new-tool --help > tests/fixtures/new-tool-root.txt`
-2. Add parse tests in `tests/test_pipeline_integration.py`
-3. Add section tests in `tests/test_parser_sections.py` if the format is new
-
-## Code Style
-
-- Python 3.11+ with type hints
-- No external dependencies for crawler or generator (stdlib only)
-- Keep files under 500 lines
-- Tests go in `tests/`, never in root
-
-## Pull Requests
-
-- One feature per PR
-- All tests must pass: `uv run python -m pytest tests/ -v`
-- Include test fixtures for new CLI formats
-- Update `config.yaml` if adding a new CLI
