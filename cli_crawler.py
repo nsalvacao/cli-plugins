@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 from crawler.config import CLIConfig, CrawlerConfig, load_config
-from crawler.pipeline import crawl_cli, crawl_all
+from crawler.pipeline import crawl_all, crawl_cli
 
 
 def main() -> None:

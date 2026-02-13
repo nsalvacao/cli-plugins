@@ -1,6 +1,5 @@
-import pytest
-from dataclasses import asdict
-from crawler.models import CLIMap, Command, Flag, PositionalArg, EnvVar
+from crawler.models import CLIMap, Command, Flag
+
 
 def test_flag_schema():
     """T006/T044: Flag should match data-model.md fields."""

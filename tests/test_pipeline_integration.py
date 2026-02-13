@@ -94,14 +94,15 @@ class TestOutputSchema:
                 continue
             data = json.loads(f.read_text(encoding="utf-8"))
             # Verify required top-level keys
-            assert "cli" in data
-            assert "version" in data
-            assert "scanned_at" in data
-            assert "help_pattern" in data
-            assert "tree" in data
-            assert "meta" in data
+            assert "cli_name" in data
+            assert "cli_version" in data
+            assert "metadata" in data
+            assert "commands" in data
+            
             # Verify meta structure
-            meta = data["meta"]
+            meta = data["metadata"]
+            assert "scanned_at" in meta
+            assert "help_pattern" in meta
             assert "total_commands" in meta
             assert "total_flags" in meta
             assert "duration_seconds" in meta

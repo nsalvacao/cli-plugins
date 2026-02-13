@@ -37,8 +37,7 @@ cli-crawler = "crawler.pipeline:main"
 generate-plugin = "generator.plugin_generator:main"
 
 [tool.hatch.build.targets.wheel]
-sources = ["src"]
-packages = ["crawler", "generator", "config", "lib"]
+packages = ["src/crawler", "src/generator", "src/config", "src/lib"]
 
 [project.optional-dependencies]
 dev = [

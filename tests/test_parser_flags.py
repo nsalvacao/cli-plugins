@@ -8,7 +8,7 @@ class TestFlagParsing:
         flags = parse_flags_section("  -m, --message <msg>    commit message")
         assert len(flags) == 1
         assert flags[0].name == "--message"
-        assert flags[0].short == "-m"
+        assert flags[0].short_name == "-m"
         assert flags[0].type == "string"
 
     def test_boolean_flag(self):
@@ -86,7 +86,7 @@ class TestRichClickFormat:
         flags = parse_flags_section("  --version  -v        Print the current CLI version.")
         assert len(flags) == 1
         assert flags[0].name == "--version"
-        assert flags[0].short == "-v"
+        assert flags[0].short_name == "-v"
         assert flags[0].type == "bool"
 
     def test_negatable_pair(self):
