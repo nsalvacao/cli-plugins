@@ -1,6 +1,6 @@
 """Tests for flag/option parsing across all format families."""
 
-from crawler.parsers.flags import parse_flags_section, _try_parse_flag, _extract_choices, _extract_default
+from crawler.parsers.flags import _extract_choices, _extract_default, parse_flags_section
 
 
 class TestFlagParsing:
@@ -49,7 +49,8 @@ class TestFlagParsing:
         assert len(flags) == 3
 
     def test_docker_run_flags(self, docker_run_help):
-        from crawler.parsers.sections import segment_help_text, SectionType
+        from crawler.parsers.sections import SectionType, segment_help_text
+
         sections = segment_help_text(docker_run_help)
         flag_sections = [s for s in sections if s.type == SectionType.FLAGS]
         if flag_sections:
@@ -57,7 +58,8 @@ class TestFlagParsing:
             assert len(flags) > 10  # docker run has many flags
 
     def test_gh_flags(self, gh_help):
-        from crawler.parsers.sections import segment_help_text, SectionType
+        from crawler.parsers.sections import SectionType, segment_help_text
+
         sections = segment_help_text(gh_help)
         flag_sections = [s for s in sections if s.type == SectionType.FLAGS]
         if flag_sections:
@@ -88,7 +90,9 @@ class TestRichClickFormat:
         assert flags[0].type == "bool"
 
     def test_negatable_pair(self):
-        flags = parse_flags_section("  --pip                --no-pip               Pip install the template(s)")
+        flags = parse_flags_section(
+            "  --pip                --no-pip               Pip install the template(s)"
+        )
         assert len(flags) == 1
         assert flags[0].name == "--pip"
         assert flags[0].type == "bool"
@@ -106,7 +110,8 @@ class TestRichClickFormat:
         assert flags[0].type == "string"
 
     def test_langchain_serve_flags(self, langchain_serve_help):
-        from crawler.parsers.sections import segment_help_text, SectionType
+        from crawler.parsers.sections import SectionType, segment_help_text
+
         sections = segment_help_text(langchain_serve_help)
         flag_sections = [s for s in sections if s.type == SectionType.FLAGS]
         assert flag_sections

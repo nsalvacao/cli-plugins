@@ -1,16 +1,12 @@
-"""Tests for scripts/generate_plugin.py -- plugin generator."""
+"""Tests for generator.plugin_generator -- plugin generator."""
 
 import json
 import re
-import sys
 from pathlib import Path
 
 import pytest
 
-# Ensure the scripts directory is importable
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from generate_plugin import (
-    Stats,
+from generator.plugin_generator import (
     build_trigger_phrases,
     compute_stats,
     format_flags_table,
@@ -33,6 +29,8 @@ DOCKER_JSON = FIXTURE_DIR / "docker.json"
 @pytest.fixture
 def cf_map():
     """Load claude-flow.json as a dict."""
+    if not CF_JSON.exists():
+        pytest.skip(f"{CF_JSON} not available (output/ is gitignored)")
     return load_cli_map(CF_JSON)
 
 
@@ -44,6 +42,7 @@ def cf_stats(cf_map):
 # ---------------------------------------------------------------------------
 # load_cli_map
 # ---------------------------------------------------------------------------
+
 
 class TestLoadCliMap:
     def test_valid(self, cf_map):
@@ -68,6 +67,7 @@ class TestLoadCliMap:
 # compute_stats
 # ---------------------------------------------------------------------------
 
+
 class TestComputeStats:
     def test_counts(self, cf_stats):
         assert cf_stats.total_commands >= 30  # at least top-level + subs
@@ -89,6 +89,7 @@ class TestComputeStats:
 # ---------------------------------------------------------------------------
 # walk_tree / group_commands
 # ---------------------------------------------------------------------------
+
 
 class TestTreeHelpers:
     def test_walk_tree_yields_all(self, cf_map):
@@ -115,14 +116,14 @@ class TestTreeHelpers:
 # format_flags_table
 # ---------------------------------------------------------------------------
 
+
 class TestFormatFlagsTable:
     def test_empty(self):
         assert format_flags_table([]) == ""
 
     def test_renders_rows(self):
         flags = [
-            {"name": "--verbose", "short": "-v", "type": "bool",
-             "description": "Enable verbose"},
+            {"name": "--verbose", "short": "-v", "type": "bool", "description": "Enable verbose"},
         ]
         table = format_flags_table(flags)
         assert "| Flag |" in table
@@ -131,8 +132,13 @@ class TestFormatFlagsTable:
 
     def test_default_value(self):
         flags = [
-            {"name": "--fix", "short": "-f", "type": "bool",
-             "description": "Fix issues", "default": "false"},
+            {
+                "name": "--fix",
+                "short": "-f",
+                "type": "bool",
+                "description": "Fix issues",
+                "default": "false",
+            },
         ]
         table = format_flags_table(flags)
         assert "default: false" in table
@@ -141,6 +147,7 @@ class TestFormatFlagsTable:
 # ---------------------------------------------------------------------------
 # generate_plugin_json
 # ---------------------------------------------------------------------------
+
 
 class TestPluginJson:
     def test_valid_json(self, cf_map, cf_stats):
@@ -160,6 +167,7 @@ class TestPluginJson:
 # ---------------------------------------------------------------------------
 # generate_skill_md
 # ---------------------------------------------------------------------------
+
 
 class TestSkillMd:
     def test_frontmatter(self, cf_map, cf_stats):
@@ -206,6 +214,7 @@ class TestSkillMd:
 # generate_commands_md
 # ---------------------------------------------------------------------------
 
+
 class TestCommandsMd:
     def test_all_top_commands(self, cf_map):
         md = generate_commands_md(cf_map)
@@ -231,6 +240,7 @@ class TestCommandsMd:
 # generate_examples_md
 # ---------------------------------------------------------------------------
 
+
 class TestExamplesMd:
     def test_has_examples(self, cf_map):
         md = generate_examples_md(cf_map)
@@ -247,6 +257,7 @@ class TestExamplesMd:
 # generate_scan_cli_md
 # ---------------------------------------------------------------------------
 
+
 class TestScanCliMd:
     def test_contains_cli_name(self):
         md = generate_scan_cli_md("claude-flow", "output/claude-flow.json")
@@ -261,6 +272,7 @@ class TestScanCliMd:
 # ---------------------------------------------------------------------------
 # build_trigger_phrases
 # ---------------------------------------------------------------------------
+
 
 class TestTriggerPhrases:
     def test_length(self, cf_map):
@@ -278,6 +290,7 @@ class TestTriggerPhrases:
 # Full pipeline (integration)
 # ---------------------------------------------------------------------------
 
+
 class TestFullPipeline:
     def test_generate_plugin_creates_files(self, cf_map, tmp_path):
         root = generate_plugin(cf_map, tmp_path, "output/claude-flow.json")
@@ -292,10 +305,14 @@ class TestFullPipeline:
     def test_idempotent(self, cf_map, tmp_path):
         generate_plugin(cf_map, tmp_path, "output/claude-flow.json")
         # Read first run
-        skill1 = (tmp_path / "cli-claude-flow" / "skills" / "cli-claude-flow" / "SKILL.md").read_text()
+        skill1 = (
+            tmp_path / "cli-claude-flow" / "skills" / "cli-claude-flow" / "SKILL.md"
+        ).read_text()
         # Run again
         generate_plugin(cf_map, tmp_path, "output/claude-flow.json")
-        skill2 = (tmp_path / "cli-claude-flow" / "skills" / "cli-claude-flow" / "SKILL.md").read_text()
+        skill2 = (
+            tmp_path / "cli-claude-flow" / "skills" / "cli-claude-flow" / "SKILL.md"
+        ).read_text()
         assert skill1 == skill2
 
     def test_dry_run_no_files(self, cf_map, tmp_path):
@@ -307,9 +324,7 @@ class TestFullPipeline:
         pj = json.loads((root / ".claude-plugin" / "plugin.json").read_text())
         assert pj["name"] == "cli-claude-flow"
 
-    @pytest.mark.skipif(
-        not DOCKER_JSON.exists(), reason="docker.json not available"
-    )
+    @pytest.mark.skipif(not DOCKER_JSON.exists(), reason="docker.json not available")
     def test_generality_docker(self, tmp_path):
         docker_map = load_cli_map(DOCKER_JSON)
         root = generate_plugin(docker_map, tmp_path, "output/docker.json")

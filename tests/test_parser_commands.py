@@ -54,7 +54,8 @@ class TestCSVFormat:
 
 class TestIntegration:
     def test_docker_help(self, docker_help):
-        from crawler.parsers.sections import segment_help_text, SectionType
+        from crawler.parsers.sections import SectionType, segment_help_text
+
         sections = segment_help_text(docker_help)
         cmd_sections = [s for s in sections if s.type == SectionType.COMMANDS]
         all_cmds = []
@@ -63,7 +64,8 @@ class TestIntegration:
         assert len(all_cmds) >= 20  # docker has many commands
 
     def test_git_help(self, git_help):
-        from crawler.parsers.sections import segment_help_text, SectionType
+        from crawler.parsers.sections import SectionType, segment_help_text
+
         sections = segment_help_text(git_help)
         cmd_sections = [s for s in sections if s.type == SectionType.COMMANDS]
         all_cmds = []

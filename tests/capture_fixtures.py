@@ -71,9 +71,13 @@ def capture_all():
             print(f"Capturing: {' '.join(cmd)} -> {filepath}")
             try:
                 result = subprocess.run(
-                    cmd, capture_output=True, text=True,
-                    timeout=10, env=SAFE_ENV,
-                    encoding="utf-8", errors="replace",
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    env=SAFE_ENV,
+                    encoding="utf-8",
+                    errors="replace",
                 )
                 text = result.stdout
                 if not text.strip() and result.stderr.strip():

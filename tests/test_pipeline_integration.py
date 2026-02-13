@@ -40,8 +40,7 @@ class TestFullParse:
 
     def test_parse_git_commit_manpage(self, git_commit_help):
         assert is_manpage(git_commit_help)
-        result = parse_help_output(git_commit_help, "git", "git commit",
-                                   force_manpage=True)
+        result = parse_help_output(git_commit_help, "git", "git commit", force_manpage=True)
         assert result.command.flags
         assert result.command.description
 
@@ -93,7 +92,7 @@ class TestOutputSchema:
         for f in output_dir.glob("*.json"):
             if f.name.endswith(".raw.json"):
                 continue
-            data = json.loads(f.read_text())
+            data = json.loads(f.read_text(encoding="utf-8"))
             # Verify required top-level keys
             assert "cli" in data
             assert "version" in data

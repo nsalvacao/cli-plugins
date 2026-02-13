@@ -1,0 +1,20 @@
+{
+  "name": "cli-ruff",
+  "version": "0.14.13",
+  "description": "Command reference plugin for ruff CLI",
+  "keywords": [
+    "ruff",
+    "analysis",
+    "over",
+    "python",
+    "source",
+    "code"
+  ],
+  "author": {
+    "name": "Nuno Salvacao",
+    "email": "nuno.salvacao@gmail.com",
+    "url": "https://github.com/nsalvacao"
+  },
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

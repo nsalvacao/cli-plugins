@@ -1,6 +1,6 @@
 """Tests for section header detection and text segmentation."""
 
-from crawler.parsers.sections import segment_help_text, detect_section_type, SectionType
+from crawler.parsers.sections import SectionType, detect_section_type, segment_help_text
 
 
 class TestDetectSectionType:
@@ -35,7 +35,10 @@ class TestDetectSectionType:
         assert detect_section_type("All commands:") == SectionType.COMMANDS
 
     def test_git_prose_at_col0(self):
-        assert detect_section_type("start a working area (see also: git help tutorial)") == SectionType.COMMANDS
+        assert (
+            detect_section_type("start a working area (see also: git help tutorial)")
+            == SectionType.COMMANDS
+        )
 
     def test_indented_line_not_section(self):
         # Indented lines should NOT match git prose patterns
@@ -77,11 +80,14 @@ class TestSegmentHelpText:
         types = [s.type for s in sections]
         assert SectionType.COMMANDS in types
         # uv has multiple flag sections (Cache options, Python options, Global options)
-        flag_sections = [s for s in sections if s.type in (SectionType.FLAGS, SectionType.GLOBAL_FLAGS)]
+        flag_sections = [
+            s for s in sections if s.type in (SectionType.FLAGS, SectionType.GLOBAL_FLAGS)
+        ]
         assert len(flag_sections) >= 2
 
     def test_git_manpage(self, git_commit_help):
         from crawler.parsers.manpage import is_manpage
+
         assert is_manpage(git_commit_help)
 
     def test_richclick_box_stripping(self, langchain_help):
