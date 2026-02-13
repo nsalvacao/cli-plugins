@@ -80,7 +80,7 @@ FLAG_BRACKET_RE = re.compile(
     r"\["
     r"(-[a-zA-Z0-9]\|)?"  # optional short: -S|
     r"(--[\w-]+(?:\|--[\w-]+)*)"  # long flags: --save|--no-save
-    r"(?:\s+<([^>]+(?:\|[^>]+)*)>)?"  # optional value: <hoisted|nested>
+    r"(?:\s+<([^>|]+(?:\|[^>|]+)*)>)?"  # optional value: <hoisted|nested>
     r"\]"
 )
 
