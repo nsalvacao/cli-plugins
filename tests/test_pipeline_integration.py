@@ -98,7 +98,7 @@ class TestOutputSchema:
             assert "cli_version" in data
             assert "metadata" in data
             assert "commands" in data
-            
+
             # Verify meta structure
             meta = data["metadata"]
             assert "scanned_at" in meta

@@ -61,9 +61,12 @@ def serialize_cli_map(cli_map: CLIMap) -> dict[str, Any]:
             _serialize_flag(f) for f in sorted(cli_map.global_flags, key=lambda f: f.name)
         ],
         "environment_variables": [
-            _serialize_envvar(e) for e in sorted(cli_map.environment_variables, key=lambda e: e.name)
+            _serialize_envvar(e)
+            for e in sorted(cli_map.environment_variables, key=lambda e: e.name)
         ],
-        "commands": {name: _serialize_command(cmd) for name, cmd in sorted(cli_map.commands.items())},
+        "commands": {
+            name: _serialize_command(cmd) for name, cmd in sorted(cli_map.commands.items())
+        },
     }
 
 
@@ -146,9 +149,6 @@ def _serialize_envvar(ev: EnvVar) -> dict[str, Any]:
     if ev.description:
         data["description"] = ev.description
     return data
-
-
-
 
 
 def _embed_raw(tree: dict, raw_outputs: dict[str, str], cli_name: str) -> None:

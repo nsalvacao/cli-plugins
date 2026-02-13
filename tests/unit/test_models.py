@@ -12,7 +12,7 @@ def test_flag_schema():
         required=True,
         default="False",
         choices=None,
-        confidence=1.0
+        confidence=1.0,
     )
     assert f.name == "--help"
     assert f.long_name == "--help"
@@ -20,6 +20,7 @@ def test_flag_schema():
     assert f.type == "bool"
     # Ensure backward compat or explicit break? Explicit break preferred for V1.
     # assert not hasattr(f, "short")  # Old field should be gone
+
 
 def test_command_schema():
     """T006: Command should match data-model.md fields."""
@@ -32,13 +33,16 @@ def test_command_schema():
         flags=[],
         positional_args=[],
         env_vars=[],
-        subcommands={}
+        subcommands={},
     )
     assert cmd.name == "run"
     assert cmd.path == "docker run"
     assert cmd.aliases == ["r"]
     # Check hierarchy
-    assert isinstance(cmd.subcommands, dict)  # Implementation detail: dict is fine for internal model
+    assert isinstance(
+        cmd.subcommands, dict
+    )  # Implementation detail: dict is fine for internal model
+
 
 def test_climap_schema():
     """T006: CLIMap should match data-model.md fields."""
@@ -48,7 +52,7 @@ def test_climap_schema():
         metadata={"author": "unknown", "scanned_at": "2023-01-01"},
         global_flags=[],
         environment_variables=[],
-        commands={}
+        commands={},
     )
     assert climap.cli_name == "docker"
     assert climap.cli_version == "24.0.0"

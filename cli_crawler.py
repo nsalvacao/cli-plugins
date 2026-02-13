@@ -20,30 +20,29 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Crawl CLI --help outputs and generate structured JSON maps",
         epilog="Examples:\n"
-               "  python cli_crawler.py git -o output/git.json\n"
-               "  python cli_crawler.py --config config.yaml --all\n"
-               "  python cli_crawler.py docker -v --include-raw\n",
+        "  python cli_crawler.py git -o output/git.json\n"
+        "  python cli_crawler.py --config config.yaml --all\n"
+        "  python cli_crawler.py docker -v --include-raw\n",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("cli", nargs="?", help="CLI to crawl (e.g., git, docker)")
     parser.add_argument("--config", "-c", type=Path, help="Path to config YAML")
     parser.add_argument("--output", "-o", type=Path, help="Output file path")
-    parser.add_argument("--output-dir", type=Path, default=Path("./output"),
-                        help="Output directory (default: ./output)")
-    parser.add_argument("--all", action="store_true",
-                        help="Crawl all CLIs in config")
-    parser.add_argument("--include-raw", action="store_true",
-                        help="Include raw help text in main JSON")
-    parser.add_argument("--verbose", "-v", action="store_true",
-                        help="Verbose logging")
-    parser.add_argument("--strict", action="store_true",
-                        help="Fail on first parse error")
-    parser.add_argument("--max-depth", type=int,
-                        help="Override max recursion depth")
-    parser.add_argument("--timeout", type=int,
-                        help="Override timeout per command (seconds)")
-    parser.add_argument("--list", action="store_true",
-                        help="List configured CLIs and exit")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("./output"),
+        help="Output directory (default: ./output)",
+    )
+    parser.add_argument("--all", action="store_true", help="Crawl all CLIs in config")
+    parser.add_argument(
+        "--include-raw", action="store_true", help="Include raw help text in main JSON"
+    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose logging")
+    parser.add_argument("--strict", action="store_true", help="Fail on first parse error")
+    parser.add_argument("--max-depth", type=int, help="Override max recursion depth")
+    parser.add_argument("--timeout", type=int, help="Override timeout per command (seconds)")
+    parser.add_argument("--list", action="store_true", help="List configured CLIs and exit")
 
     args = parser.parse_args()
 
