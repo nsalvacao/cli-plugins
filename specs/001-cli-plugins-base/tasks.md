@@ -47,11 +47,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T006 Create CLIMap schema (`CLI`, `CLIMap`, `Command`, `Flag`, `Plugin` entities) in `src/crawler/models.py` — reconcile with data-model.md (see T044)
-- [ ] T044 [P] [NEW] Reconcile schema inconsistency: `data-model.md` defines `Flag.long_name` + `Flag.short_name` separately; `crawler/models.py` uses `name` + `short`. Decide canonical naming, update both `models.py` and `data-model.md` to match. Add migration note. *(M3)*
-- [ ] T007 Implement safe subprocess execution utility in `src/lib/subprocess_utils.py` — `subprocess.run` with tokenised args only, no `shell=True`, timeout enforcement, SAFE_ENV (disable colour/pager)
-- [ ] T067 [P] [NEW] Security review: audit `crawler/executor._build_command` Windows PowerShell path — confirm no shell-injection risk when joining command array for PowerShell; add unit test covering edge case *(evaluation-results §5 WARN, L4)*
-- [ ] T008 Configure basic logging infrastructure in `src/lib/logger.py` — **use Python stdlib `logging` module only; NO external packages** (FR-008, constitution §Zero Dependencies); structured levels (DEBUG/INFO/WARNING/ERROR); configurable via env var `CLI_PLUGINS_LOG_LEVEL`
+- [x] T006 Create CLIMap schema (`CLI`, `CLIMap`, `Command`, `Flag`, `Plugin` entities) in `src/crawler/models.py` — reconcile with data-model.md (see T044)
+- [x] T044 [P] [NEW] Reconcile schema inconsistency: `data-model.md` defines `Flag.long_name` + `Flag.short_name` separately; `crawler/models.py` uses `name` + `short`. Decide canonical naming, update both `models.py` and `data-model.md` to match. Add migration note. *(M3)*
+- [x] T007 Implement safe subprocess execution utility in `src/lib/subprocess_utils.py` — `subprocess.run` with tokenised args only, no `shell=True`, timeout enforcement, SAFE_ENV (disable colour/pager)
+- [x] T067 [P] [NEW] Security review: audit `crawler/executor._build_command` Windows PowerShell path — confirm no shell-injection risk when joining command array for PowerShell; add unit test covering edge case *(evaluation-results §5 WARN, L4)*
+- [x] T008 Configure basic logging infrastructure in `src/lib/logger.py` — **use Python stdlib `logging` module only; NO external packages** (FR-008, constitution §Zero Dependencies); structured levels (DEBUG/INFO/WARNING/ERROR); configurable via env var `CLI_PLUGINS_LOG_LEVEL`
 - [ ] T028 [MOVED from Phase 6] [P] Implement semantic keyword generation for plugins in `src/generator/plugin_generator.py` — keywords derived from CLI name + top command group names + domain terms extracted from description (NOT first words of command descriptions) *(FR-012; Blocker B5)*
 - [ ] T029 [MOVED from Phase 6] [P] Implement author configuration for plugins in `src/generator/plugin_generator.py` — `--author` CLI flag or `CLI_PLUGINS_AUTHOR` env var; omit `author` field entirely when not specified; community generators must not carry hardcoded attribution *(FR-011; Blocker B6)*
 - [ ] T040 [NEW] Implement progressive disclosure in `src/generator/plugin_generator.py` — SKILL.md compact view (≤800 tokens: top-level commands + global flags + 5 examples); `references/commands.md` (full flag tables, loaded on demand); `references/examples.md` (all examples, loaded on demand) *(FR-004; constitution §Auto-Geração e Otimização)*
