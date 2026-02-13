@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 # Environment overrides that suppress colour output and interactive pagers,
 # ensuring deterministic text output across all platforms.
+# NOTE: ``src/crawler/executor.py`` defines an equivalent SAFE_ENV for crawler
+# use.  If you add or remove keys here, update executor.py accordingly.
 SAFE_ENV: dict[str, str] = {
     "NO_COLOR": "1",
     "PAGER": "cat",

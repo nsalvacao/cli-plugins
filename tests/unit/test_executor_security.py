@@ -10,6 +10,7 @@ def _executor(env: str = "wsl") -> Executor:
 
 # ── Linux/WSL passthrough ─────────────────────────────────────────────────────
 
+
 def test_linux_command_passthrough():
     cmd = ["git", "status"]
     assert _executor("wsl")._build_command(cmd) == cmd
@@ -21,6 +22,7 @@ def test_linux_command_unchanged_with_special_chars():
 
 
 # ── PowerShell wrapping ───────────────────────────────────────────────────────
+
 
 def test_windows_wraps_in_powershell():
     result = _executor("windows")._build_command(["git", "status"])
@@ -57,6 +59,7 @@ def test_windows_no_raw_join_prevents_injection():
 
 
 # ── _quote_ps_arg helper ──────────────────────────────────────────────────────
+
 
 def test_quote_ps_arg_plain():
     assert _quote_ps_arg("git") == "'git'"

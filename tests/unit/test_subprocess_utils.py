@@ -18,7 +18,7 @@ def test_run_safe_empty_cmd_raises():
 
 
 def test_run_safe_timeout():
-    result = run_safe(["sleep", "10"], timeout=1)
+    result = run_safe(["python3", "-c", "import time; time.sleep(10)"], timeout=1)
     assert result.timed_out is True
     assert result.exit_code == -1
     assert "TIMEOUT" in result.stderr
@@ -49,5 +49,12 @@ def test_run_safe_no_shell_injection():
 
 
 def test_run_safe_extra_env_is_merged():
-    result = run_safe(["env"], extra_env={"TEST_CUSTOM_VAR": "sentinel_value"})
+    result = run_safe(
+        [
+            "python3",
+            "-c",
+            "import os; print('\\n'.join(f'{k}={v}' for k, v in os.environ.items()))",
+        ],
+        extra_env={"TEST_CUSTOM_VAR": "sentinel_value"},
+    )
     assert "TEST_CUSTOM_VAR=sentinel_value" in result.stdout
