@@ -1,0 +1,15 @@
+{
+  "name": "cli-jq",
+  "version": "",
+  "description": "Command reference plugin for jq CLI",
+  "keywords": [
+    "jq"
+  ],
+  "author": {
+    "name": "Nuno Salvacao",
+    "email": "nuno.salvacao@gmail.com",
+    "url": "https://github.com/nsalvacao"
+  },
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}
