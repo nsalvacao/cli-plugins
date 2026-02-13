@@ -128,6 +128,7 @@ def _crawl_single_subcommand(
         desc = parent_descriptions.get(subcmd_name, "")
         cmd = Command(
             path=full_path,
+            name=subcmd_name,
             description=desc,
             confidence=0.6,
         )

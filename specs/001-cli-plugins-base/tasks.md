@@ -27,15 +27,15 @@
 
 **Purpose**: Project initialization, known structure bugs, and CI/CD — MUST complete before any user story work. CI/CD moved here from Phase 6 per constitution §CI/CD Automatizado and execution-plan A7 ("BLOCKS EVERYTHING").
 
-- [ ] T001 Create project directories: `src/crawler`, `src/generator`, `src/config`, `src/lib`, `tests/unit`, `tests/integration`, `tests/end_to_end` — **decision**: migrate existing `crawler/` → `src/crawler/` (preserve git history with `git mv`)
-- [ ] T002 Initialize Python project with `pyproject.toml` in repository root *(exists — bugs fixed in T038)*
-- [ ] T038 [NEW] Fix known `pyproject.toml` bugs: move `classifiers` from `[project.urls]` to `[project]`; fix `readme` path from `docs/README.md` to `README.md`; add `[build-system]` section with `hatchling` — verify with `uv build && twine check dist/*` *(Blocker B1 — evaluation-results_v2)*
-- [ ] T039 [NEW] Register `generate-plugin` as CLI entry point in `pyproject.toml` `[project.scripts]`: `generate-plugin = "generator.plugin_generator:main"` — verify `pip install -e . && generate-plugin --help` works *(Blocker B2)*
-- [ ] T003 Configure basic `config.yaml` in `src/config/config.yaml`
-- [ ] T004 [P] Configure linting and formatting (Black, Ruff) in `pyproject.toml` — add `[tool.black]` and `[tool.ruff]` sections; verify `ruff check src/ tests/` runs clean
-- [ ] T005 [P] Setup Pytest for testing in `pyproject.toml` — add `[tool.pytest.ini_options]` with testpaths, markers for unit/integration/e2e
-- [ ] T032 [MOVED from Phase 6] Create CI/CD pipeline: `.github/workflows/ci.yml` — pytest matrix on Python 3.11+3.12, ruff lint, black check; runs on push and PR; add CI badge to `README.md` *(constitution §CI/CD Automatizado; execution-plan A7)*
-- [ ] T066 [P] [NEW] Add `__version__` to package via `src/__init__.py` sourced from `pyproject.toml`; add `--version` flag to `cli-crawler` and `generate-plugin` entry points *(evaluation-results A5, L3)*
+- [x] T001 Create project directories: `src/crawler`, `src/generator`, `src/config`, `src/lib`, `tests/unit`, `tests/integration`, `tests/end_to_end` — **decision**: migrate existing `crawler/` → `src/crawler/` (preserve git history with `git mv`)
+- [x] T002 Initialize Python project with `pyproject.toml` in repository root *(exists — bugs fixed in T038)*
+- [x] T038 [NEW] Fix known `pyproject.toml` bugs: move `classifiers` from `[project.urls]` to `[project]`; fix `readme` path from `docs/README.md` to `README.md`; add `[build-system]` section with `hatchling` — verify with `uv build && twine check dist/*` *(Blocker B1 — evaluation-results_v2)*
+- [x] T039 [NEW] Register `generate-plugin` as CLI entry point in `pyproject.toml` `[project.scripts]`: `generate-plugin = "generator.plugin_generator:main"` — verify `pip install -e . && generate-plugin --help` works *(Blocker B2)*
+- [x] T003 Configure basic `config.yaml` in `src/config/config.yaml`
+- [x] T004 [P] Configure linting and formatting (Black, Ruff) in `pyproject.toml` — add `[tool.black]` and `[tool.ruff]` sections; verify `ruff check src/ tests/` runs clean
+- [x] T005 [P] Setup Pytest for testing in `pyproject.toml` — add `[tool.pytest.ini_options]` with testpaths, markers for unit/integration/e2e
+- [x] T032 [MOVED from Phase 6] Create CI/CD pipeline: `.github/workflows/ci.yml` — pytest matrix on Python 3.11+3.12, ruff lint, black check; runs on push and PR; add CI badge to `README.md` *(constitution §CI/CD Automatizado; execution-plan A7)*
+- [x] T066 [P] [NEW] Add `__version__` to package via `src/__init__.py` sourced from `pyproject.toml`; add `--version` flag to `cli-crawler` and `generate-plugin` entry points *(evaluation-results A5, L3)*
 
 **Checkpoint — Phase 1 AC**: `pip install -e '.[dev]'` succeeds; `pytest` discovers tests; `ruff check src/` exits 0; `npx ci` green; `cli-crawler --version` outputs version string.
 

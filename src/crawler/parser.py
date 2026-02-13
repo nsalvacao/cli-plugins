@@ -25,7 +25,7 @@ def parse_help_output(
     """Main parse entry point. Dispatches to manpage or section-based parser."""
     if not text.strip():
         return ParseResult(
-            command=Command(path=command_path),
+            command=Command(path=command_path, name=command_path.split()[-1]),
             warnings=["Empty help output"],
         )
 
@@ -54,7 +54,7 @@ def _parse_sectioned(text: str, cli_name: str, command_path: str) -> ParseResult
     subcommand_descriptions: dict[str, str] = {}
 
     # Initialize command
-    cmd = Command(path=command_path)
+    cmd = Command(path=command_path, name=command_path.split()[-1])
     all_flags: list[Flag] = []
     global_flags: list[Flag] = []
     env_vars: list[EnvVar] = []

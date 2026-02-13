@@ -147,7 +147,8 @@ def _try_parse_brackets(line: str) -> list[Flag]:
             results.append(
                 Flag(
                     name=lf,
-                    short=short if lf == long_flags[0] else None,
+                    long_name=lf,
+                    short_name=short if lf == long_flags[0] else None,
                     type="bool" if is_bool else "string",
                     choices=choices,
                     confidence=0.80,
@@ -168,7 +169,7 @@ def _try_parse_flag(line: str) -> Flag | None:
     m = FLAG_NEGATABLE_RE.match(line)
     if m:
         return _build_flag(
-            short=m.group(1),
+            short_name=m.group(1),
             long=m.group(2),
             value=m.group(3),
             description=m.group(4) or "",
@@ -193,7 +194,7 @@ def _try_parse_flag(line: str) -> Flag | None:
         go_type = m.group(3)
         is_bool = go_type.lower() in ("bool", "boolean")
         return _build_flag(
-            short=m.group(1),
+            short_name=m.group(1),
             long=m.group(2),
             value=None if is_bool else go_type,
             description=m.group(4),
@@ -205,7 +206,7 @@ def _try_parse_flag(line: str) -> Flag | None:
     m = FLAG_RICHCLICK_RE.match(line)
     if m:
         return _build_flag(
-            short=m.group(2),
+            short_name=m.group(2),
             long=m.group(1),
             value=None,
             description=m.group(3),
@@ -216,7 +217,7 @@ def _try_parse_flag(line: str) -> Flag | None:
     m = FLAG_STANDARD_RE.match(line)
     if m:
         return _build_flag(
-            short=m.group(1),
+            short_name=m.group(1),
             long=m.group(2),
             value=m.group(3),
             description=m.group(4),
@@ -228,7 +229,7 @@ def _try_parse_flag(line: str) -> Flag | None:
     if m:
         return Flag(
             name=m.group(1),
-            short=m.group(1),
+            short_name=m.group(1),
             type="bool",
             description=m.group(2).strip(),
             confidence=0.70,
@@ -238,7 +239,7 @@ def _try_parse_flag(line: str) -> Flag | None:
     m = FLAG_NODESCRIP_RE.match(line)
     if m:
         return _build_flag(
-            short=m.group(1),
+            short_name=m.group(1),
             long=m.group(2),
             value=m.group(4),
             description="",
@@ -249,7 +250,7 @@ def _try_parse_flag(line: str) -> Flag | None:
 
 
 def _build_flag(
-    short: str | None,
+    short_name: str | None,
     long: str,
     value: str | None,
     description: str,
@@ -269,7 +270,8 @@ def _build_flag(
 
     return Flag(
         name=long,
-        short=short,
+        long_name=long,
+        short_name=short_name,
         type=flag_type,
         required=False,
         default=default,

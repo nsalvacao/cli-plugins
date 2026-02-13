@@ -68,7 +68,7 @@ def group_commands(tree: dict) -> dict[str, list[str]]:
 # Loading & stats
 # ---------------------------------------------------------------------------
 
-REQUIRED_KEYS = {"cli", "tree", "meta"}
+REQUIRED_KEYS = {"cli_name", "commands", "metadata"}
 
 
 def load_cli_map(path: str | Path) -> dict:
@@ -84,7 +84,7 @@ def load_cli_map(path: str | Path) -> dict:
 
 def compute_stats(cli_map: dict) -> Stats:
     """Walk the tree to compute aggregate statistics."""
-    tree = cli_map["tree"]
+    tree = cli_map["commands"]
 
     total_commands = 0
     total_flags = 0
@@ -118,8 +118,8 @@ def compute_stats(cli_map: dict) -> Stats:
         max_depth=max_depth,
         groups=list(grps.keys()),
         top_commands=top_cmds,
-        version=cli_map.get("version", "unknown"),
-        cli_name=cli_map["cli"],
+        version=cli_map.get("cli_version", "unknown"),
+        cli_name=cli_map["cli_name"],
     )
 
 
@@ -148,7 +148,7 @@ def format_flags_table(flags: list[dict]) -> str:
 def build_trigger_phrases(cli_name: str, cli_map: dict) -> str:
     """Auto-generate a description string from the CLI name and top commands.
     Must be under 1024 characters for SKILL.md frontmatter."""
-    tree = cli_map["tree"]
+    tree = cli_map["commands"]
 
     # Build domain-aware grouping from commands with subcommands
     groups: list[str] = []
@@ -221,7 +221,7 @@ def generate_plugin_json(cli_map: dict, stats: Stats) -> str:
     keywords = [cli]
     # Add unique meaningful words from descriptions
     seen: set[str] = {cli}
-    for data in cli_map["tree"].values():
+    for data in cli_map["commands"].values():
         for word in data.get("description", "").lower().split():
             word = re.sub(r"[^a-z0-9-]", "", word)
             if len(word) > 3 and word not in seen:
@@ -256,7 +256,7 @@ def generate_skill_md(cli_map: dict, stats: Stats) -> str:
     # Build quick reference table -- all top-level commands
     quick_ref_rows = ["| Command | Description |", "| --- | --- |"]
     for name in stats.top_commands:
-        data = cli_map["tree"].get(name, {})
+        data = cli_map["commands"].get(name, {})
         desc = _clean_description(data.get("description", ""))
         quick_ref_rows.append(f"| `{cli} {name}` | {desc} |")
     quick_ref = "\n".join(quick_ref_rows)
@@ -265,7 +265,7 @@ def generate_skill_md(cli_map: dict, stats: Stats) -> str:
     gf_table = format_flags_table(cli_map.get("global_flags", []))
 
     # Command groups summary
-    grps = group_commands(cli_map["tree"])
+    grps = group_commands(cli_map["commands"])
     groups_section = ""
     for label, cmds in grps.items():
         groups_section += f"\n### {label}\n\n"
@@ -274,7 +274,7 @@ def generate_skill_md(cli_map: dict, stats: Stats) -> str:
     # Common usage examples (pick first 8 unique examples from tree)
     examples_lines: list[str] = []
     seen_ex: set[str] = set()
-    for _, data, _ in walk_tree(cli_map["tree"]):
+    for _, data, _ in walk_tree(cli_map["commands"]):
         raw = data.get("examples", [])
         for i in range(0, len(raw) - 1, 2):
             cmd, desc = raw[i], raw[i + 1]
@@ -329,7 +329,7 @@ def generate_skill_md(cli_map: dict, stats: Stats) -> str:
         "- **All usage examples:** see `references/examples.md`\n"
     )
     troubleshooting = "## Troubleshooting\n\n"
-    has_doctor = "doctor" in cli_map["tree"]
+    has_doctor = "doctor" in cli_map["commands"]
     if has_doctor:
         troubleshooting += f"- Run `{cli} doctor` to diagnose issues\n"
     troubleshooting += (
@@ -347,7 +347,7 @@ def generate_skill_md(cli_map: dict, stats: Stats) -> str:
 
 def generate_commands_md(cli_map: dict) -> str:
     """Generate references/commands.md -- full command tree as markdown."""
-    cli = cli_map["cli"]
+    cli = cli_map["cli_name"]
     lines: list[str] = [f"# {cli} -- Complete Command Reference\n"]
 
     # Global flags
@@ -358,11 +358,11 @@ def generate_commands_md(cli_map: dict) -> str:
         lines.append("")
 
     # Group by top-level
-    grps = group_commands(cli_map["tree"])
+    grps = group_commands(cli_map["commands"])
     for label, cmd_names in grps.items():
         lines.append(f"## {label}\n")
         for name in cmd_names:
-            data = cli_map["tree"][name]
+            data = cli_map["commands"][name]
             desc = _clean_description(data.get("description", ""))
             path = data.get("path", f"{cli} {name}")
             lines.append(f"### `{path}`\n")
@@ -408,11 +408,11 @@ def generate_commands_md(cli_map: dict) -> str:
 
 def generate_examples_md(cli_map: dict) -> str:
     """Generate references/examples.md -- all usage examples."""
-    cli = cli_map["cli"]
+    cli = cli_map["cli_name"]
     lines: list[str] = [f"# {cli} -- Usage Examples\n"]
     seen: set[str] = set()
 
-    for name, data, depth in walk_tree(cli_map["tree"]):
+    for name, data, depth in walk_tree(cli_map["commands"]):
         raw = data.get("examples", [])
         if not raw:
             continue

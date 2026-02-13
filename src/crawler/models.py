@@ -8,7 +8,8 @@ from dataclasses import dataclass, field
 @dataclass
 class Flag:
     name: str
-    short: str | None = None
+    long_name: str | None = None
+    short_name: str | None = None
     type: str = "string"  # "bool" | "string" (v1)
     required: bool = False
     default: str | None = None
@@ -33,6 +34,7 @@ class EnvVar:
 @dataclass
 class Command:
     path: str  # "git commit"
+    name: str  # "commit"
     description: str = ""
     usage_pattern: str = ""
     aliases: list[str] = field(default_factory=list)
@@ -50,25 +52,13 @@ class Command:
 
 
 @dataclass
-class Meta:
-    total_commands: int = 0
-    total_flags: int = 0
-    max_depth: int = 0
-    parse_errors: int = 0
-    parse_warnings: list[str] = field(default_factory=list)
-    duration_seconds: float = 0.0
-
-
-@dataclass
 class CLIMap:
-    cli: str
-    version: str = ""
-    scanned_at: str = ""
-    help_pattern: str = ""
+    cli_name: str
+    cli_version: str = ""
+    metadata: dict[str, str] = field(default_factory=dict)
     global_flags: list[Flag] = field(default_factory=list)
-    env_vars: list[EnvVar] = field(default_factory=list)
-    tree: dict[str, Command] = field(default_factory=dict)
-    meta: Meta = field(default_factory=Meta)
+    environment_variables: list[EnvVar] = field(default_factory=list)
+    commands: dict[str, Command] = field(default_factory=dict)
 
 
 @dataclass

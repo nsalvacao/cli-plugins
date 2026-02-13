@@ -46,13 +46,13 @@ def cf_stats(cf_map):
 
 class TestLoadCliMap:
     def test_valid(self, cf_map):
-        assert cf_map["cli"] == "claude-flow"
-        assert "tree" in cf_map
-        assert "meta" in cf_map
+        assert cf_map["cli_name"] == "claude-flow"
+        assert "commands" in cf_map
+        assert "metadata" in cf_map
 
     def test_missing_fields(self, tmp_path):
         bad = tmp_path / "bad.json"
-        bad.write_text(json.dumps({"cli": "x"}))
+        bad.write_text(json.dumps({"cli_name": "x"}))
         with pytest.raises(ValueError, match="Missing required keys"):
             load_cli_map(bad)
 
@@ -93,18 +93,18 @@ class TestComputeStats:
 
 class TestTreeHelpers:
     def test_walk_tree_yields_all(self, cf_map):
-        names = [name for name, _, _ in walk_tree(cf_map["tree"])]
+        names = [name for name, _, _ in walk_tree(cf_map["commands"])]
         assert "doctor" in names
         assert "route" in names
 
     def test_walk_tree_depths(self, cf_map):
-        depths = {name: d for name, _, d in walk_tree(cf_map["tree"])}
+        depths = {name: d for name, _, d in walk_tree(cf_map["commands"])}
         assert depths["agent"] == 0  # top-level
         # subcommands of route should be depth 1
         assert depths.get("stats", -1) == 1
 
     def test_group_commands(self, cf_map):
-        grps = group_commands(cf_map["tree"])
+        grps = group_commands(cf_map["commands"])
         assert "Command Groups" in grps or "Commands" in grps
         all_cmds = []
         for v in grps.values():
@@ -218,7 +218,7 @@ class TestSkillMd:
 class TestCommandsMd:
     def test_all_top_commands(self, cf_map):
         md = generate_commands_md(cf_map)
-        for name in cf_map["tree"]:
+        for name in cf_map["commands"]:
             assert name in md, f"Command '{name}' missing from commands.md"
 
     def test_flags_table(self, cf_map):

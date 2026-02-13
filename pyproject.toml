@@ -38,7 +38,7 @@ generate-plugin = "generator.plugin_generator:main"
 
 [tool.hatch.build.targets.wheel]
 sources = ["src"]
-packages = ["src/crawler", "src/generator", "src/config", "src/lib"]
+packages = ["crawler", "generator", "config", "lib"]
 
 [project.optional-dependencies]
 dev = [

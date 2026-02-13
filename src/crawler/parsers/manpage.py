@@ -99,6 +99,7 @@ def parse_manpage(text: str, cli_name: str, command_path: str) -> tuple[Command,
 
     cmd = Command(
         path=command_path,
+        name=command_path.split()[-1],
         description=description,
         usage_pattern=usage,
         flags=flags,
@@ -226,7 +227,8 @@ def _parse_manpage_options(content: str) -> list[Flag]:
                 flags.append(
                     Flag(
                         name=long_flag,
-                        short=short,
+                        long_name=long_flag,
+                        short_name=short,
                         type="bool" if is_bool else "string",
                         description=description,
                         confidence=0.85,
@@ -236,7 +238,7 @@ def _parse_manpage_options(content: str) -> list[Flag]:
                 flags.append(
                     Flag(
                         name=short,
-                        short=short,
+                        short_name=short,
                         type="bool",
                         description=description,
                         confidence=0.70,

@@ -12,7 +12,7 @@ from .detector import detect_help_pattern
 from .discovery import CrawlState, discover_and_crawl, discover_plugins
 from .executor import Executor
 from .formatter import write_output
-from .models import CLIMap, Flag, Meta
+from .models import CLIMap, Flag
 from .parser import parse_help_output
 from .version import detect_version
 
@@ -99,15 +99,18 @@ def crawl_cli(
     meta = _compute_meta(subtree, duration, state, global_flags)
 
     # 10. Assemble CLIMap
+    # 10. Assemble CLIMap
     cli_map = CLIMap(
-        cli=cli_name,
-        version=version,
-        scanned_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        help_pattern=detection.pattern,
+        cli_name=cli_name,
+        cli_version=version,
+        metadata={
+            "scanned_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "help_pattern": detection.pattern,
+            **meta,  # flatten meta stats into metadata
+        },
         global_flags=global_flags,
-        env_vars=parse_result.command.env_vars,
-        tree=subtree,
-        meta=meta,
+        environment_variables=parse_result.command.env_vars,
+        commands=subtree,
     )
 
     # 11. Write output
@@ -184,7 +187,7 @@ def _compute_meta(
     duration: float,
     state: CrawlState,
     global_flags: list[Flag],
-) -> Meta:
+) -> dict[str, str]:
     """Compute metadata stats."""
     total_commands = 0
     total_flags = len(global_flags)
@@ -201,14 +204,14 @@ def _compute_meta(
 
     _walk(tree, 1)
 
-    return Meta(
-        total_commands=total_commands,
-        total_flags=total_flags,
-        max_depth=max_depth,
-        parse_errors=state.errors,
-        parse_warnings=state.warnings,
-        duration_seconds=duration,
-    )
+    return {
+        "total_commands": str(total_commands),
+        "total_flags": str(total_flags),
+        "max_depth": str(max_depth),
+        "parse_errors": str(len(state.errors)),
+        "parse_warnings": str(len(state.warnings)),
+        "duration_seconds": f"{duration:.2f}",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -287,9 +290,9 @@ def main() -> None:
         strict=args.strict,
     )
     print(f"CLIMap written to: {output_path}")
-    print(f"  Commands: {cli_map.meta.total_commands}")
-    print(f"  Flags:    {cli_map.meta.total_flags}")
-    print(f"  Duration: {cli_map.meta.duration_seconds:.1f}s")
+    print(f"  Commands: {cli_map.metadata.get('total_commands', 0)}")
+    print(f"  Flags:    {cli_map.metadata.get('total_flags', 0)}")
+    print(f"  Duration: {cli_map.metadata.get('duration_seconds', 0)}s")
 
 
 if __name__ == "__main__":

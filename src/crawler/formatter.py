@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import CLIConfig
-from .models import CLIMap, Command, EnvVar, Flag, Meta, PositionalArg
+from .models import CLIMap, Command, EnvVar, Flag, PositionalArg
 
 logger = logging.getLogger("cli_crawler.formatter")
 
@@ -29,7 +29,7 @@ def write_output(
     # Handle raw text
     if include_raw:
         # Embed raw text in each command node
-        _embed_raw(data.get("tree", {}), raw_outputs, cli_map.cli)
+        _embed_raw(data.get("tree", {}), raw_outputs, cli_map.cli_name)
     elif raw_outputs:
         total_raw = sum(len(v) for v in raw_outputs.values())
         if total_raw > config.raw_threshold:
@@ -54,16 +54,16 @@ def write_output(
 def serialize_cli_map(cli_map: CLIMap) -> dict[str, Any]:
     """Serialize CLIMap to dict for JSON output."""
     return {
-        "cli": cli_map.cli,
-        "version": cli_map.version,
-        "scanned_at": cli_map.scanned_at,
-        "help_pattern": cli_map.help_pattern,
+        "cli_name": cli_map.cli_name,
+        "cli_version": cli_map.cli_version,
+        "metadata": cli_map.metadata,
         "global_flags": [
             _serialize_flag(f) for f in sorted(cli_map.global_flags, key=lambda f: f.name)
         ],
-        "env_vars": [_serialize_envvar(e) for e in sorted(cli_map.env_vars, key=lambda e: e.name)],
-        "tree": {name: _serialize_command(cmd) for name, cmd in sorted(cli_map.tree.items())},
-        "meta": _serialize_meta(cli_map.meta),
+        "environment_variables": [
+            _serialize_envvar(e) for e in sorted(cli_map.environment_variables, key=lambda e: e.name)
+        ],
+        "commands": {name: _serialize_command(cmd) for name, cmd in sorted(cli_map.commands.items())},
     }
 
 
@@ -113,8 +113,10 @@ def _serialize_flag(flag: Flag) -> dict[str, Any]:
     """Serialize flag with token-efficient output."""
     data: dict[str, Any] = {"name": flag.name}
 
-    if flag.short:
-        data["short"] = flag.short
+    if flag.short_name:
+        data["short"] = flag.short_name
+    if flag.long_name:
+        data["long"] = flag.long_name
     data["type"] = flag.type
     if flag.required:
         data["required"] = True
@@ -146,15 +148,7 @@ def _serialize_envvar(ev: EnvVar) -> dict[str, Any]:
     return data
 
 
-def _serialize_meta(meta: Meta) -> dict[str, Any]:
-    return {
-        "total_commands": meta.total_commands,
-        "total_flags": meta.total_flags,
-        "max_depth": meta.max_depth,
-        "parse_errors": meta.parse_errors,
-        "parse_warnings": meta.parse_warnings,
-        "duration_seconds": round(meta.duration_seconds, 2),
-    }
+
 
 
 def _embed_raw(tree: dict, raw_outputs: dict[str, str], cli_name: str) -> None:
