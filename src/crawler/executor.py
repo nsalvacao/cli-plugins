@@ -13,7 +13,18 @@ from .models import ExecutionResult
 
 logger = logging.getLogger("cli_crawler.executor")
 
-ANSI_RE = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b\[.*?[@-~]")
+ANSI_RE = re.compile(r"\[[0-9;]*[a-zA-Z]|\][^]*|\[.*?[@-~]")
+
+
+def _quote_ps_arg(arg: str) -> str:
+    """Single-quote a PowerShell argument, escaping embedded single quotes as ''.
+
+    PowerShell single-quoted strings are literal — no variable or command
+    substitution occurs, which prevents injection via special characters.
+    Embedded single quotes are escaped by doubling them (PowerShell convention).
+    """
+    return "'" + arg.replace("'", "''") + "'"
+
 
 SAFE_ENV = {
     "NO_COLOR": "1",
@@ -113,15 +124,21 @@ class Executor:
         return result
 
     def _build_command(self, command: list[str]) -> list[str]:
-        """Wrap in powershell.exe for windows environment."""
+        """Wrap in powershell.exe for Windows environment, with safe quoting.
+
+        Uses the PowerShell '&' call operator with individually single-quoted
+        arguments to prevent command injection via spaces or special characters
+        in argument values.
+        """
         if self.config.environment == "windows":
-            cmd_str = " ".join(command)
+            quoted_args = " ".join(_quote_ps_arg(a) for a in command)
+            ps_cmd = f"& {quoted_args}"
             return [
                 "powershell.exe",
                 "-NoProfile",
                 "-NonInteractive",
                 "-Command",
-                cmd_str,
+                ps_cmd,
             ]
         return command
 

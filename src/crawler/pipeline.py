@@ -120,8 +120,8 @@ def crawl_cli(
     logger.info(
         "=== Done: %s (%d commands, %d flags, %.1fs) ===",
         cli_name,
-        meta.total_commands,
-        meta.total_flags,
+        int(meta.get("total_commands", 0)),
+        int(meta.get("total_flags", 0)),
         duration,
     )
 
@@ -208,7 +208,7 @@ def _compute_meta(
         "total_commands": str(total_commands),
         "total_flags": str(total_flags),
         "max_depth": str(max_depth),
-        "parse_errors": str(len(state.errors)),
+        "parse_errors": str(state.errors),
         "parse_warnings": str(len(state.warnings)),
         "duration_seconds": f"{duration:.2f}",
     }
