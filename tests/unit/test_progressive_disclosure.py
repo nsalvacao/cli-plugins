@@ -55,3 +55,46 @@ def test_references_keep_full_details_while_skill_is_compact(
     assert "docker run" in commands_md
     assert commands_md.count("| Flag |") >= 1
     assert examples_md.count("```bash") > skill_md.count("```bash")
+
+
+def _global_only_cli_map() -> dict:
+    return {
+        "cli_name": "awk",
+        "cli_version": "",
+        "metadata": {"help_pattern": "--help"},
+        "global_flags": [
+            {
+                "name": "--help",
+                "short": "-h",
+                "type": "bool",
+                "description": "show help",
+            },
+            {
+                "name": "--version",
+                "short": "-V",
+                "type": "bool",
+                "description": "show version",
+            },
+        ],
+        "commands": {},
+    }
+
+
+def test_global_only_cli_skill_uses_safe_fallback_version_and_examples(tmp_path: Path) -> None:
+    cli_map = _global_only_cli_map()
+
+    stats = compute_stats(cli_map)
+    skill_md = generate_skill_md(cli_map, stats)
+
+    assert "Compact command reference for **awk** vunknown." in skill_md
+    assert "Command format examples: `awk --help`, `awk --version`" in skill_md
+    assert "_No examples extracted._" not in skill_md
+    assert "```bash" in skill_md
+
+    plugin_root = generate_plugin(cli_map, tmp_path / "plugins", "output/awk.json")
+    examples_md = (plugin_root / "skills" / "cli-awk" / "references" / "examples.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "```bash" in examples_md
+    assert "awk --help" in examples_md

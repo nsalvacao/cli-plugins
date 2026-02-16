@@ -125,3 +125,40 @@ def test_detect_help_pattern_continues_after_auth_failure_on_first_pattern() -> 
 
     detection = detect_help_pattern(cli_name, _FakeExecutor(), CLIConfig(name=cli_name))
     assert detection.pattern == "-h"
+
+
+def test_detect_help_pattern_prefers_auth_required_over_best_result_fallback() -> None:
+    cli_name = "secure-cli"
+    non_help_banner = "\n".join(
+        [
+            "Access restricted",
+            "Sign in to continue",
+            "Visit https://example.test/login",
+        ]
+    )
+
+    class _FakeExecutor:
+        def run_with_retry(self, command: list[str], timeout: int | None = None) -> ExecutionResult:
+            del timeout
+            if command == [cli_name, "--help"]:
+                return ExecutionResult(
+                    stdout="",
+                    stderr="login required",
+                    exit_code=1,
+                    command=command,
+                )
+            if command == [cli_name, "-h"]:
+                return ExecutionResult(
+                    stdout=non_help_banner,
+                    stderr="",
+                    exit_code=0,
+                    command=command,
+                )
+            return ExecutionResult(stdout="", stderr="", exit_code=1, command=command)
+
+        def run(self, command: list[str], timeout: int | None = None) -> ExecutionResult:
+            return self.run_with_retry(command, timeout)
+
+    detection = detect_help_pattern(cli_name, _FakeExecutor(), CLIConfig(name=cli_name))
+    assert detection.pattern == "auth_required"
+    assert detection.result.stderr.startswith("AUTH_REQUIRED:")

@@ -110,12 +110,13 @@ def detect_help_pattern(
                 is_manpage=is_manpage(result.stdout),
             )
 
+    # Prefer explicit auth-required signal over generic non-help fallback output.
+    if auth_result:
+        return auth_result
     # Return best available or empty
     if best_result:
         logger.warning("No clear help output for %s, using best guess", cli_name)
         return best_result
-    if auth_result:
-        return auth_result
 
     return HelpDetectionResult(
         pattern="unknown",
