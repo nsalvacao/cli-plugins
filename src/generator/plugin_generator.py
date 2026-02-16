@@ -644,7 +644,9 @@ def generate_examples_md(cli_map: dict) -> str:
     lines: list[str] = [f"# {cli} -- Usage Examples\n"]
     doc_examples, has_explicit_examples = _collect_document_examples(cli_map)
     if not has_explicit_examples and doc_examples:
-        lines.append("_No explicit examples found in CLI help; generated from usage/global context._\n")
+        lines.append(
+            "_No explicit examples found in CLI help; generated from usage/global context._\n"
+        )
 
     grouped: dict[tuple[str, int], list[tuple[str, str]]] = {}
     group_order: list[tuple[str, int]] = []
