@@ -1,0 +1,10 @@
+{
+  "name": "cli-ls",
+  "version": "unknown",
+  "description": "Command reference plugin for ls CLI",
+  "keywords": [
+    "ls"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

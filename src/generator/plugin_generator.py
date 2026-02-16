@@ -2,9 +2,9 @@
 """Generate a Claude Code plugin from a CLI crawler JSON map.
 
 Usage:
-    python scripts/generate_plugin.py output/claude-flow.json
-    python scripts/generate_plugin.py output/docker.json -o ./my-plugins/
-    python scripts/generate_plugin.py output/claude-flow.json --dry-run
+    generate-plugin output/claude-flow.json
+    generate-plugin output/docker.json -o ./my-plugins/
+    generate-plugin output/claude-flow.json --dry-run
 """
 
 from __future__ import annotations
@@ -90,6 +90,7 @@ def load_cli_map(path: str | Path) -> dict:
 def compute_stats(cli_map: dict) -> Stats:
     """Walk the tree to compute aggregate statistics."""
     tree = cli_map["commands"]
+    resolved_version = str(cli_map.get("cli_version", "")).strip() or "unknown"
 
     total_commands = 0
     total_flags = 0
@@ -123,7 +124,7 @@ def compute_stats(cli_map: dict) -> Stats:
         max_depth=max_depth,
         groups=list(grps.keys()),
         top_commands=top_cmds,
-        version=cli_map.get("cli_version", "unknown"),
+        version=resolved_version,
         cli_name=cli_map["cli_name"],
         cli_slug=plugin_slug(cli_map["cli_name"]),
     )
@@ -358,6 +359,14 @@ def _example_command_from_usage(path: str, usage: str, cli_name: str) -> str:
     return path.strip()
 
 
+def _global_fallback_examples(cli_name: str) -> list[tuple[str, str]]:
+    """Return stable examples for CLIs that expose only root/global help."""
+    return [
+        (f"{cli_name} --help", "Display built-in help and global options."),
+        (f"{cli_name} --version", "Print CLI version information."),
+    ]
+
+
 def _collect_document_examples(
     cli_map: dict,
     *,
@@ -402,6 +411,19 @@ def _collect_document_examples(
         seen.add(key)
         desc = _clean_description(data.get("description", "")) or fallback_note
         entries.append((path, depth, key, desc))
+        if limit is not None and len(entries) >= limit:
+            break
+
+    if entries:
+        return entries, False
+
+    # Last fallback: CLI has no command tree. Provide stable root examples.
+    for cmd, desc in _global_fallback_examples(cli):
+        key = cmd.strip()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        entries.append((cli, 0, key, desc))
         if limit is not None and len(entries) >= limit:
             break
 
@@ -453,12 +475,15 @@ def generate_skill_md(cli_map: dict, stats: Stats) -> str:
     command_examples: list[str] = []
     for preferred in ("agent", "swarm"):
         if preferred in cli_map["commands"]:
-            command_examples.append(preferred)
+            command_examples.append(f"{cli} {preferred}")
     for candidate in sorted(cli_map["commands"].keys()):
-        if candidate not in command_examples:
-            command_examples.append(candidate)
+        full_command = f"{cli} {candidate}"
+        if full_command not in command_examples:
+            command_examples.append(full_command)
         if len(command_examples) >= 3:
             break
+    if not command_examples:
+        command_examples = [cmd for cmd, _desc in _global_fallback_examples(cli)]
 
     # Global flags table
     gf_table = format_flags_table(cli_map.get("global_flags", []))
@@ -495,7 +520,7 @@ def generate_skill_md(cli_map: dict, stats: Stats) -> str:
                     f"... +{len(leaf_commands) - len(shown_leaf)} more in `references/commands.md`"
                 )
         lines.append(
-            "Command format examples: " + ", ".join(f"`{cli} {name}`" for name in command_examples)
+            "Command format examples: " + ", ".join(f"`{command}`" for command in command_examples)
         )
         return "\n".join(lines) if lines else "_No commands._"
 
@@ -619,7 +644,9 @@ def generate_examples_md(cli_map: dict) -> str:
     lines: list[str] = [f"# {cli} -- Usage Examples\n"]
     doc_examples, has_explicit_examples = _collect_document_examples(cli_map)
     if not has_explicit_examples and doc_examples:
-        lines.append("_No explicit examples found in CLI help; generated from usage patterns._\n")
+        lines.append(
+            "_No explicit examples found in CLI help; generated from usage/global context._\n"
+        )
 
     grouped: dict[tuple[str, int], list[tuple[str, str]]] = {}
     group_order: list[tuple[str, int]] = []
@@ -668,11 +695,22 @@ def generate_rescan_sh(
         exit 1
     fi
 
+    PYTHONPATH_FALLBACK="$PROJECT_ROOT/src${{PYTHONPATH:+:$PYTHONPATH}}"
+
     echo "==> Crawling $CLI_NAME..."
-    python3 "$PROJECT_ROOT/cli_crawler.py" "$CLI_NAME"
+    if command -v cli-crawler &>/dev/null; then
+        cli-crawler "$CLI_NAME" -o "$JSON_PATH"
+    else
+        PYTHONPATH="$PYTHONPATH_FALLBACK" python3 -m crawler.pipeline "$CLI_NAME" -o "$JSON_PATH"
+    fi
 
     echo "==> Generating plugin..."
-    python3 "$PROJECT_ROOT/scripts/generate_plugin.py" "$JSON_PATH" "$@"
+    if command -v generate-plugin &>/dev/null; then
+        generate-plugin "$JSON_PATH" -o "$PROJECT_ROOT/plugins" "$@"
+    else
+        PYTHONPATH="$PYTHONPATH_FALLBACK" \\
+            python3 -m generator.plugin_generator "$JSON_PATH" -o "$PROJECT_ROOT/plugins" "$@"
+    fi
 
     echo "==> Done. Plugin at: $PLUGIN_DIR"
     ls -la "$PLUGIN_DIR"

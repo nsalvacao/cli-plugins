@@ -344,6 +344,19 @@ class TestFullPipeline:
         assert (root / "commands" / "scan-cli.md").exists()
         assert (root / "scripts" / "rescan.sh").exists()
 
+    def test_rescan_script_uses_entrypoints_with_module_fallback(self, cf_map, tmp_path):
+        root = generate_plugin(cf_map, tmp_path, "output/claude-flow.json")
+        script = (root / "scripts" / "rescan.sh").read_text(encoding="utf-8")
+
+        assert 'cli-crawler "$CLI_NAME" -o "$JSON_PATH"' in script
+        assert 'python3 -m crawler.pipeline "$CLI_NAME" -o "$JSON_PATH"' in script
+        assert 'generate-plugin "$JSON_PATH" -o "$PROJECT_ROOT/plugins" "$@"' in script
+        assert (
+            'python3 -m generator.plugin_generator "$JSON_PATH" -o "$PROJECT_ROOT/plugins" "$@"'
+            in script
+        )
+        assert "scripts/generate_plugin.py" not in script
+
     def test_idempotent(self, cf_map, tmp_path):
         generate_plugin(cf_map, tmp_path, "output/claude-flow.json")
         # Read first run
