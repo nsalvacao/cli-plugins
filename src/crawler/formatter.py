@@ -17,7 +17,7 @@ def write_output(
     cli_map: CLIMap,
     raw_outputs: dict[str, str],
     output_path: Path,
-    config: CLIConfig,
+    _config: CLIConfig,
     include_raw: bool = False,
 ) -> None:
     """Write main JSON and optionally separate raw JSON."""
@@ -32,16 +32,15 @@ def write_output(
         _embed_raw(data.get("tree", {}), raw_outputs, cli_map.cli_name)
     elif raw_outputs:
         total_raw = sum(len(v) for v in raw_outputs.values())
-        if total_raw > config.raw_threshold:
-            # Write separate raw file
-            raw_path = output_path.with_suffix(".raw.json")
-            raw_data = {path: text for path, text in sorted(raw_outputs.items())}
-            raw_path.write_text(
-                json.dumps(raw_data, indent=2, ensure_ascii=False),
-                encoding="utf-8",
-            )
-            data["raw_file"] = raw_path.name
-            logger.info("Raw text written to %s (%d bytes)", raw_path, total_raw)
+        # Always write separate raw sidecar for deterministic output layout.
+        raw_path = output_path.with_suffix(".raw.json")
+        raw_data = {path: text for path, text in sorted(raw_outputs.items())}
+        raw_path.write_text(
+            json.dumps(raw_data, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        data["raw_file"] = raw_path.name
+        logger.info("Raw text written to %s (%d bytes)", raw_path, total_raw)
 
     # Write main JSON
     output_path.write_text(

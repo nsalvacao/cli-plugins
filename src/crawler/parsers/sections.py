@@ -75,6 +75,17 @@ _p(
     SectionType.COMMANDS,
 )
 
+# Sentence-case grouped command headings (pnpm-style)
+_p(
+    r"^\s*(?:"
+    r"Manage\s+your\s+dependencies|"
+    r"Review\s+your\s+dependencies|"
+    r"Run\s+your\s+scripts|"
+    r"Other"
+    r")\s*:\s*$",
+    SectionType.COMMANDS,
+)
+
 # Flags / Options (generic, after global/inherited)
 _p(
     r"^\s*(?:"
@@ -110,8 +121,9 @@ _GIT_PROSE_PATTERNS = [
 ]
 
 # Box-drawing format (rich-click)
-_BOX_HEADER_RE = re.compile(r"^\s*\+-\s*(.+?)\s*-+\+\s*$")
-_BOX_BORDER_RE = re.compile(r"^\s*\+[-─]+\+\s*$")
+# Supports both ASCII (+-|) and Unicode (╭─╮│╰) variants.
+_BOX_HEADER_RE = re.compile(r"^\s*(?:\+-|╭[─-])\s*(.+?)\s*(?:-+\+|[─-]*╮)\s*$")
+_BOX_BORDER_RE = re.compile(r"^\s*(?:\+[-─]+\+|╭[─-]+╮|╰[─-]+╯)\s*$")
 
 
 def detect_section_type(line: str) -> SectionType | None:
@@ -251,7 +263,7 @@ def _strip_rich_boxes(text: str) -> str:
     Also merges multi-line continuations within boxes (lines with
     heavy indentation that continue the previous line's description).
     """
-    if "+-" not in text:
+    if all(token not in text for token in ("+-", "╭", "│", "╰")):
         return text
 
     lines = text.splitlines()
@@ -274,8 +286,11 @@ def _strip_rich_boxes(text: str) -> str:
             has_boxes = True
             continue
 
-        # Box content: | content |
-        if stripped.startswith("|") and stripped.endswith("|") and len(stripped) > 2:
+        # Box content: | content |  or  │ content │
+        if (
+            (stripped.startswith("|") and stripped.endswith("|"))
+            or (stripped.startswith("│") and stripped.endswith("│"))
+        ) and len(stripped) > 2:
             inner = stripped[1:-1]
             inner_stripped = inner.strip()
             if inner_stripped:

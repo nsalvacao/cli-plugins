@@ -31,6 +31,25 @@ MANPAGE_SHORT_RE = re.compile(r"^\s{4,8}(-[a-zA-Z0-9])\s*$")
 
 # Synopsis continuation
 SYNOPSIS_CMD_RE = re.compile(r"^\s+(\S.+)$")
+EXAMPLE_COMMAND_RE = re.compile(
+    r"^(?:[$#]\s*)?"
+    r"(?:[a-z0-9][\w.-]*|\.\/\S+|/\S+)"
+    r"(?:\s+.+)?$"
+)
+EXAMPLE_BULLET_PREFIX_RE = re.compile(r"^(?:[-*]|\d+[.)])\s+")
+EXAMPLE_PROSE_STARTERS = {
+    "for",
+    "see",
+    "note",
+    "notes",
+    "tip",
+    "tips",
+    "example",
+    "examples",
+    "this",
+    "that",
+    "the",
+}
 
 
 def is_manpage(text: str) -> bool:
@@ -303,13 +322,51 @@ def _parse_manpage_envvars(content: str) -> list[EnvVar]:
 def _parse_manpage_examples(content: str) -> list[str]:
     """Parse EXAMPLES section of man page."""
     examples: list[str] = []
-    for line in content.splitlines():
+    seen: set[str] = set()
+    lines = content.splitlines()
+
+    candidate_indents = [
+        len(line) - len(line.lstrip())
+        for line in lines
+        if line.strip() and not line.lstrip().startswith((".", "'"))
+    ]
+    min_indent = min(candidate_indents) if candidate_indents else 0
+
+    for line in lines:
         stripped = line.strip()
-        if stripped and not stripped.startswith(".") and not stripped.startswith("'"):
-            indent = len(line) - len(line.lstrip())
-            if indent >= 8 and re.match(r"^[\w$./]", stripped):
-                # Remove leading $ if present
-                if stripped.startswith("$ "):
-                    stripped = stripped[2:]
-                examples.append(stripped)
+        if not stripped or stripped.startswith(".") or stripped.startswith("'"):
+            continue
+
+        indent = len(line) - len(line.lstrip())
+        # In man pages, command examples are typically at the shallowest indent in EXAMPLES.
+        # If min indent is 0 (left-aligned prose present), do not apply this filter.
+        if min_indent > 0 and indent > min_indent + 1:
+            continue
+
+        candidate = EXAMPLE_BULLET_PREFIX_RE.sub("", stripped).strip()
+        if candidate.startswith("$ ") or candidate.startswith("# "):
+            candidate = candidate[2:].strip()
+
+        if not candidate:
+            continue
+
+        first_word = candidate.split()[0].lower()
+        if first_word in EXAMPLE_PROSE_STARTERS:
+            continue
+
+        # Description/prose lines usually end with punctuation and are more deeply indented.
+        if (
+            indent > min_indent
+            and candidate.endswith(".")
+            and not stripped.startswith(("$", "#", "./", "/"))
+        ):
+            continue
+
+        if not EXAMPLE_COMMAND_RE.match(stripped) and not EXAMPLE_COMMAND_RE.match(candidate):
+            continue
+
+        if candidate not in seen:
+            seen.add(candidate)
+            examples.append(candidate)
+
     return examples

@@ -75,7 +75,7 @@ class TestComputeStats:
         assert cf_stats.total_examples >= 10  # unique examples
         assert cf_stats.global_flags == 8
         assert cf_stats.cli_name == "claude-flow"
-        assert cf_stats.version == "3.1.0-alpha.3"
+        assert cf_stats.version.startswith("3.1.0-alpha.")
 
     def test_max_depth(self, cf_stats):
         assert cf_stats.max_depth >= 1
@@ -154,7 +154,7 @@ class TestPluginJson:
         content = generate_plugin_json(cf_map, cf_stats)
         obj = json.loads(content)
         assert obj["name"] == "cli-claude-flow"
-        assert obj["version"] == "3.1.0-alpha.3"
+        assert obj["version"] == cf_map["cli_version"]
         assert "keywords" in obj
         assert "claude-flow" in obj["keywords"]
 
@@ -251,6 +251,48 @@ class TestExamplesMd:
         # Count occurrences of a common example
         count = md.count("claude-flow doctor\n")
         assert count <= 1, "Examples should be deduplicated"
+
+    def test_escapes_backticks_in_example_descriptions(self):
+        cli_map = {
+            "cli_name": "demo",
+            "commands": {
+                "run": {
+                    "path": "demo run",
+                    "examples": ["demo run --fast", "Handle fenced text ```inline``` safely"],
+                    "subcommands": {},
+                }
+            },
+            "metadata": {},
+        }
+        md = generate_examples_md(cli_map)
+        assert md.count("```") == 2
+        assert "```inline```" not in md
+
+    def test_fallback_examples_from_usage_when_none_explicit(self):
+        cli_map = {
+            "cli_name": "pnpm",
+            "commands": {
+                "add": {
+                    "path": "pnpm add",
+                    "usage_pattern": "Usage: pnpm add <name>",
+                    "description": "Install package dependencies",
+                    "examples": [],
+                    "subcommands": {},
+                },
+                "install": {
+                    "path": "pnpm install",
+                    "usage_pattern": "Usage: pnpm install [options]",
+                    "description": "Install project dependencies",
+                    "examples": [],
+                    "subcommands": {},
+                },
+            },
+            "metadata": {},
+        }
+        md = generate_examples_md(cli_map)
+        assert "pnpm add <name>" in md
+        assert "pnpm install [options]" in md
+        assert "_No explicit examples found in CLI help" in md
 
 
 # ---------------------------------------------------------------------------

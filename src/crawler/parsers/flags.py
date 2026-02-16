@@ -65,6 +65,18 @@ FLAG_NODESCRIP_RE = re.compile(
     r"\s*$"
 )
 
+# GNU single-dash long option token:
+#   -print-file-name=<lib>
+#   -Wa,<options>
+#   -Xassembler
+#   -dumpmachine
+FLAG_GNU_SINGLE_DASH_TOKEN_RE = re.compile(
+    r"^-"
+    r"(?P<name>[A-Za-z][A-Za-z0-9-]*)"
+    r"(?:,(?P<comma>[^\s]+))?"
+    r"(?:=(?P<equals>[^\s]*))?$"
+)
+
 # --- Extraction patterns for metadata within descriptions ---
 
 CHOICES_BRACKET_RE = re.compile(r"\[possible values?:\s*([^\]]+)\]", re.IGNORECASE)
@@ -224,6 +236,10 @@ def _try_parse_flag(line: str) -> Flag | None:
             confidence=0.90 if m.group(1) else 0.85,
         )
 
+    gnu_flag = _try_parse_gnu_single_dash(line)
+    if gnu_flag:
+        return gnu_flag
+
     # Try short-only
     m = FLAG_SHORT_ONLY_RE.match(line)
     if m:
@@ -247,6 +263,96 @@ def _try_parse_flag(line: str) -> Flag | None:
         )
 
     return None
+
+
+def _try_parse_gnu_single_dash(line: str) -> Flag | None:
+    """Parse GNU-style single-dash long options."""
+    stripped = line.strip()
+    if not stripped or stripped.startswith("--") or not stripped.startswith("-"):
+        return None
+
+    parts = re.split(r"\s{2,}", stripped, maxsplit=1)
+    if len(parts) != 2:
+        return None
+
+    spec, description = parts[0].strip(), parts[1].strip()
+    if not spec or not description:
+        return None
+
+    tokens = spec.split()
+    option_token = tokens[0]
+    m = FLAG_GNU_SINGLE_DASH_TOKEN_RE.match(option_token)
+    if not m:
+        return None
+
+    name_core = m.group("name")
+    comma_value = m.group("comma")
+    equals_value = m.group("equals")
+    value_hint: str | None = None
+
+    if equals_value is not None:
+        value_hint = equals_value or "value"
+    elif comma_value:
+        value_hint = comma_value
+    elif len(tokens) > 1 and _looks_like_gnu_value_token(tokens[1]):
+        value_hint = tokens[1]
+    elif len(tokens) > 1:
+        # Some GNU help pages use lowercase metavars (e.g., `-L dir`, `-l library`).
+        candidate = tokens[1].strip().strip(",;:")
+        if candidate and not candidate.startswith("-"):
+            value_hint = candidate
+
+    # Keep one-letter bare flags in the dedicated short-only parser path.
+    if len(name_core) == 1 and value_hint is None:
+        return None
+
+    canonical = f"-{name_core}"
+    short_name = canonical if len(name_core) == 1 else None
+
+    return _build_flag(
+        short_name=short_name,
+        long=canonical,
+        value=value_hint,
+        description=description,
+        confidence=0.82 if value_hint else 0.78,
+        force_bool=value_hint is None,
+    )
+
+
+def _looks_like_gnu_value_token(token: str) -> bool:
+    """Return True when token is a likely metavar/value token."""
+    value = token.strip().strip(",;:")
+    if not value:
+        return False
+
+    if value.startswith("<") or value.startswith("["):
+        return True
+
+    if "|" in value:
+        return True
+
+    lowered = value.lower()
+    value_keywords = {
+        "arg",
+        "args",
+        "byte-size",
+        "class",
+        "directory",
+        "file",
+        "language",
+        "lib",
+        "number",
+        "path",
+        "prog",
+        "standard",
+        "string",
+        "targets",
+        "value",
+    }
+    if lowered in value_keywords:
+        return True
+
+    return value.isupper() and len(value) > 1
 
 
 def _build_flag(

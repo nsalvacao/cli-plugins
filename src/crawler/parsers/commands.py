@@ -23,6 +23,17 @@ CMD_TABULAR_RE = re.compile(
     r"(.+)$"  # description
 )
 
+# Tabular with alias pair: "  i, install    Description"
+CMD_TABULAR_ALIAS_RE = re.compile(
+    r"^\s+"
+    r"([\w][\w.-]*)"  # alias or short name
+    r"\s*,\s*"
+    r"([\w][\w.-]*)"  # canonical or alternate name
+    r"(\*)?"  # optional plugin marker
+    r"\s{2,}"
+    r"(.+)$"
+)
+
 # Colon-delimited: "  auth:    Authenticate..."
 CMD_COLON_RE = re.compile(
     r"^\s+"
@@ -77,18 +88,62 @@ def parse_command_section(content: str, group: str | None = None) -> list[Parsed
 def _try_tabular(lines: list[str], group: str | None) -> list[ParsedCommand]:
     """Try tabular format parsing."""
     results: list[ParsedCommand] = []
-    for line in lines:
+    i = 0
+    while i < len(lines):
+        line = lines[i]
         stripped = line.strip()
         if not stripped:
+            i += 1
             continue
-        m = CMD_TABULAR_RE.match(line)
-        if m:
-            name = m.group(1)
-            is_plugin = bool(m.group(2))
-            desc = m.group(3).strip()
+
+        alias_match = CMD_TABULAR_ALIAS_RE.match(line)
+        m = CMD_TABULAR_RE.match(line) if not alias_match else None
+
+        if alias_match or m:
+            alias_name = None
+            if alias_match:
+                first = alias_match.group(1)
+                second = alias_match.group(2)
+                is_plugin = bool(alias_match.group(3))
+                desc = alias_match.group(4).strip()
+                if len(second) > len(first):
+                    name = second
+                    alias_name = first
+                elif len(first) > len(second):
+                    name = first
+                    alias_name = second
+                else:
+                    name = second
+                    alias_name = first
+            else:
+                name = m.group(1)
+                is_plugin = bool(m.group(2))
+                desc = m.group(3).strip()
+
+            # Merge wrapped continuation lines used by some CLIs (e.g., pnpm).
+            j = i + 1
+            while j < len(lines):
+                next_line = lines[j]
+                next_stripped = next_line.strip()
+                if not next_stripped:
+                    break
+                if (
+                    CMD_TABULAR_ALIAS_RE.match(next_line)
+                    or CMD_TABULAR_RE.match(next_line)
+                    or CMD_COLON_RE.match(next_line)
+                    or CMD_CSV_RE.match(next_line)
+                ):
+                    break
+                indent = len(next_line) - len(next_line.lstrip())
+                if indent >= 10 and not next_stripped.endswith(":"):
+                    desc = f"{desc} {next_stripped}"
+                    j += 1
+                    continue
+                break
 
             # Skip common non-command lines
             if _is_noise(name):
+                i = j
                 continue
 
             is_alias = bool(ALIAS_RE.search(desc))
@@ -108,6 +163,19 @@ def _try_tabular(lines: list[str], group: str | None) -> list[ParsedCommand]:
                     alias_target=alias_target,
                 )
             )
+            if alias_name and not _is_noise(alias_name):
+                results.append(
+                    ParsedCommand(
+                        name=alias_name,
+                        description=f"Alias for {name}",
+                        group=group,
+                        is_alias=True,
+                        alias_target=name,
+                    )
+                )
+            i = j
+            continue
+        i += 1
     return results
 
 

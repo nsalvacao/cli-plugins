@@ -92,3 +92,8 @@ def langchain_app_new_help():
 @pytest.fixture
 def langchain_serve_help():
     return load_fixture("langchain", "serve_help.txt")
+
+
+@pytest.fixture
+def pnpm_help():
+    return load_fixture("pnpm", "help.txt")
