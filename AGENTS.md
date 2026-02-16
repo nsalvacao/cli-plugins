@@ -54,7 +54,8 @@ Every agent must follow this **10-step cycle** for every task:
     *   Pick a CLI tool *not yet tested* (check D:\GitHub\cli-plugins\output) and available in WIN or WSL environment.
     *   Run `cli-crawler <tool>` -> `generate-plugin <tool>`.
     *   Verify the output manually in D:\GitHub\cli-plugins\output and D:\GitHub\cli-plugins\plugins to prove the solution works in the wild.
-8.  **MARK TASK**: Check off `[x]` in `specs/001-cli-plugins-base/tasks.md` (or relevant task file).
+    *   Verify the quality of the output and the generated plugin against the main goal of the project. If the quality is not good, go back to step 5 ou defer creating new improvement tasks in `specs/001-cli-plugins-base/tasks.md` and `CLAUDE.local.md`.
+8.  **MARK TASK**: Check off `[x]` in `specs/001-cli-plugins-base/tasks.md` and `CLAUDE.local.md` (or relevant task files).
 9.  **ATOMIC COMMIT**: Commit *only* related changes with a conventional message.
 10. **PUSH + PR**: Push to branch, open PR (if applicable), and **WAIT FOR REVIEW**.
 
