@@ -35,6 +35,7 @@ Issues = "https://github.com/nsalvacao/cli-plugins/issues"
 [project.scripts]
 cli-crawler = "crawler.pipeline:main"
 generate-plugin = "generator.plugin_generator:main"
+config-audit = "config.audit:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/crawler", "src/generator", "src/config", "src/lib"]

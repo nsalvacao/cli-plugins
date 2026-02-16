@@ -4,7 +4,7 @@ defaults:
   max_concurrent: 5
   retry: 1
   environment: wsl
-  raw_threshold: 10240
+  raw_threshold: 10000
 
 clis:
   git:

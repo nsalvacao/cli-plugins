@@ -99,6 +99,11 @@ clis:
       discovery_command: my-tool plugin list
 ```
 
+**Minimal override policy (recommended)**:
+- Keep only operational overrides that differ from defaults: `environment`, `help_pattern`, `max_depth`, `max_concurrent`, `plugins.discovery_command`.
+- Do **not** mirror inventory in `config.yaml` (avoid listing every crawled/generated CLI just to keep a catalog).
+- Use `output/*.json` and `plugins/cli-*` as inventory sources of truth.
+
 ### Step 2: Crawl
 
 ```bash
@@ -228,6 +233,27 @@ uv run python scripts/generate_plugin.py output/docker.json
 ```bash
 uv run python cli_crawler.py --all --config config.yaml
 ```
+
+### Config Audit (Inventory Drift)
+
+Audit drift between `config.yaml`, `output/*.json`, and `plugins/cli-*`:
+
+```bash
+config-audit --config config.yaml --output-dir output --plugins-dir plugins --report output/config-audit.json
+```
+
+Alternative without installing console scripts:
+
+```bash
+uv run python -m config.audit --config config.yaml --output-dir output --plugins-dir plugins --report output/config-audit.json
+```
+
+This report includes:
+- `missing_in_config`
+- `stale_in_config`
+- `missing_output`
+- `missing_plugin`
+- `suggested_minimal_overrides`
 
 ## Design Decisions
 
