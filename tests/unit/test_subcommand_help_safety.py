@@ -28,7 +28,9 @@ class _RecordingExecutor:
         del timeout
         self.calls.append(command)
         stdout = self.bare_help_output if command == [self.cli_name, "help"] else ""
-        return ExecutionResult(stdout=stdout, stderr="", exit_code=0 if stdout else 1, command=command)
+        return ExecutionResult(
+            stdout=stdout, stderr="", exit_code=0 if stdout else 1, command=command
+        )
 
 
 class _MappingExecutor:

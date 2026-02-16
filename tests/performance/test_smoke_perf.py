@@ -17,7 +17,8 @@ from generator.plugin_generator import generate_plugin, load_cli_map
 @pytest.mark.performance
 def test_parse_1000_line_fixture_under_5_seconds() -> None:
     help_text = "\n".join(
-        ["Usage: perf-cli [OPTIONS] COMMAND"] + [f"--flag-{i}  Description {i}" for i in range(1000)]
+        ["Usage: perf-cli [OPTIONS] COMMAND"]
+        + [f"--flag-{i}  Description {i}" for i in range(1000)]
     )
 
     start = time.monotonic()

@@ -495,8 +495,7 @@ def generate_skill_md(cli_map: dict, stats: Stats) -> str:
                     f"... +{len(leaf_commands) - len(shown_leaf)} more in `references/commands.md`"
                 )
         lines.append(
-            "Command format examples: "
-            + ", ".join(f"`{cli} {name}`" for name in command_examples)
+            "Command format examples: " + ", ".join(f"`{cli} {name}`" for name in command_examples)
         )
         return "\n".join(lines) if lines else "_No commands._"
 
@@ -530,9 +529,7 @@ def generate_skill_md(cli_map: dict, stats: Stats) -> str:
             "- Full examples catalog: `references/examples.md`\n"
         )
         parts.append("## Re-Scanning\n")
-        parts.append(
-            "After a CLI update, run `/scan-cli` or execute crawler + generator again.\n"
-        )
+        parts.append("After a CLI update, run `/scan-cli` or execute crawler + generator again.\n")
         return "\n".join(parts)
 
     group_limit = max(1, len(command_groups))

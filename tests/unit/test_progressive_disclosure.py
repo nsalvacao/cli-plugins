@@ -44,12 +44,12 @@ def test_references_keep_full_details_while_skill_is_compact(
 ) -> None:
     plugin_root = generate_plugin(docker_map, tmp_path, str(DOCKER_JSON))
     skill_md = (plugin_root / "skills" / "cli-docker" / "SKILL.md").read_text(encoding="utf-8")
-    commands_md = (
-        plugin_root / "skills" / "cli-docker" / "references" / "commands.md"
-    ).read_text(encoding="utf-8")
-    examples_md = (
-        plugin_root / "skills" / "cli-docker" / "references" / "examples.md"
-    ).read_text(encoding="utf-8")
+    commands_md = (plugin_root / "skills" / "cli-docker" / "references" / "commands.md").read_text(
+        encoding="utf-8"
+    )
+    examples_md = (plugin_root / "skills" / "cli-docker" / "references" / "examples.md").read_text(
+        encoding="utf-8"
+    )
 
     assert _approx_token_count(skill_md) <= 800
     assert "docker run" in commands_md
