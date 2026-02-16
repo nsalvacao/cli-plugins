@@ -16,11 +16,22 @@ if ! command -v "$CLI_NAME" &>/dev/null; then
     exit 1
 fi
 
+PYTHONPATH_FALLBACK="$PROJECT_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+
 echo "==> Crawling $CLI_NAME..."
-python3 "$PROJECT_ROOT/cli_crawler.py" "$CLI_NAME"
+if command -v cli-crawler &>/dev/null; then
+    cli-crawler "$CLI_NAME" -o "$JSON_PATH"
+else
+    PYTHONPATH="$PYTHONPATH_FALLBACK" python3 -m crawler.pipeline "$CLI_NAME" -o "$JSON_PATH"
+fi
 
 echo "==> Generating plugin..."
-python3 "$PROJECT_ROOT/scripts/generate_plugin.py" "$JSON_PATH" "$@"
+if command -v generate-plugin &>/dev/null; then
+    generate-plugin "$JSON_PATH" -o "$PROJECT_ROOT/plugins" "$@"
+else
+    PYTHONPATH="$PYTHONPATH_FALLBACK" \
+        python3 -m generator.plugin_generator "$JSON_PATH" -o "$PROJECT_ROOT/plugins" "$@"
+fi
 
 echo "==> Done. Plugin at: $PLUGIN_DIR"
 ls -la "$PLUGIN_DIR"
