@@ -3,6 +3,7 @@ CLAUDE.local.md
 __pycache__/
 *.pyc
 .pytest_cache/
+.ruff_cache/
 .venv/
 *.egg-info/
 dist/
@@ -20,4 +21,15 @@ crystalline-imagining-forest.md
 .ideas/
 .dev/
 .productivity/
-/.venv-wsl
+/.venv-wsl/
+
+# Dev-only / local orchestration assets
+.agent/
+.github/agents/
+.github/prompts/
+.specify/
+.vscode/
+specs/
+tests/
+.repo-audit-2026-02-12.md
+AGENTS.md
