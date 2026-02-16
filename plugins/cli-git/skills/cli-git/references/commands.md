@@ -544,7 +544,7 @@ git rebase [-i | --interactive] [<options>] [--exec <cmd>] [--onto <newbase> | -
 
 ### `git reset`
 
-fatal: not a git repository (or any parent up to mount point /mnt)
+Unstaged changes after reset:
 
 ### `git restore`
 

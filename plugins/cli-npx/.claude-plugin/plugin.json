@@ -1,0 +1,10 @@
+{
+  "name": "cli-npx",
+  "version": "11.8.0",
+  "description": "Command reference plugin for npx CLI",
+  "keywords": [
+    "npx"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

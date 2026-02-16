@@ -1,0 +1,10 @@
+{
+  "name": "cli-g++",
+  "version": "13.3.0",
+  "description": "Command reference plugin for g++ CLI",
+  "keywords": [
+    "g++"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

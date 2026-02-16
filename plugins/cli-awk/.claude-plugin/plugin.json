@@ -1,0 +1,10 @@
+{
+  "name": "cli-awk",
+  "version": "",
+  "description": "Command reference plugin for awk CLI",
+  "keywords": [
+    "awk"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

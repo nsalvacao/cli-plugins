@@ -1,0 +1,10 @@
+{
+  "name": "cli-perl",
+  "version": "5.38.2",
+  "description": "Command reference plugin for perl CLI",
+  "keywords": [
+    "perl"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

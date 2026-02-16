@@ -1,0 +1,10 @@
+{
+  "name": "cli-gcc",
+  "version": "13.3.0",
+  "description": "Command reference plugin for gcc CLI",
+  "keywords": [
+    "gcc"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

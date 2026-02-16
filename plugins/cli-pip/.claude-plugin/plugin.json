@@ -1,0 +1,17 @@
+{
+  "name": "cli-pip",
+  "version": "24.0",
+  "description": "Command reference plugin for pip CLI",
+  "keywords": [
+    "pip",
+    "packages",
+    "installed",
+    "inspect",
+    "information",
+    "wheel",
+    "dependencies",
+    "local"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

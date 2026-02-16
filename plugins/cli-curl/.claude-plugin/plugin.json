@@ -1,0 +1,10 @@
+{
+  "name": "cli-curl",
+  "version": "8.5.0",
+  "description": "Command reference plugin for curl CLI",
+  "keywords": [
+    "curl"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

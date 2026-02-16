@@ -2618,7 +2618,7 @@ View the summary of a workflow
 
 ### `gh api`
 
-accepts 1 arg(s), received 0
+
 
 ### `gh browse`
 
