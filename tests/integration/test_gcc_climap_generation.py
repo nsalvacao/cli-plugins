@@ -43,9 +43,9 @@ def test_gcc_climap_and_plugin_quality_regression(tmp_path) -> None:
 
     loaded = load_cli_map(output_path)
     plugin_root = generate_plugin(loaded, tmp_path / "plugins", str(output_path))
-    commands_md = (
-        plugin_root / "skills" / "cli-gcc" / "references" / "commands.md"
-    ).read_text(encoding="utf-8")
+    commands_md = (plugin_root / "skills" / "cli-gcc" / "references" / "commands.md").read_text(
+        encoding="utf-8"
+    )
 
     assert "-print-file-name" in commands_md
     assert "-Wa" in commands_md

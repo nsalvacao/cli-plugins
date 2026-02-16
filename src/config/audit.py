@@ -47,7 +47,9 @@ def _collect_plugin_clis(plugins_dir: Path) -> set[str]:
     return clis
 
 
-def _suggest_minimal_overrides(config: CrawlerConfig) -> tuple[dict[str, dict[str, Any]], list[str]]:
+def _suggest_minimal_overrides(
+    config: CrawlerConfig,
+) -> tuple[dict[str, dict[str, Any]], list[str]]:
     """Keep only operational overrides that differ from defaults."""
     defaults = config.defaults
     suggestions: dict[str, dict[str, Any]] = {}
@@ -107,7 +109,9 @@ def build_config_audit_report(
 
 def write_config_audit_report(report: dict[str, Any], report_path: Path) -> None:
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    report_path.write_text(
+        json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
 
 
 def _build_parser() -> argparse.ArgumentParser:

@@ -55,10 +55,9 @@ def test_auth_required_help_returns_clear_warning_without_hanging(
     assert cli_map.commands == {}
     assert int(cli_map.metadata.get("parse_warnings", "0")) >= 1
     assert float(cli_map.metadata.get("confidence_score", "1.0")) <= 0.30
-    assert (
-        cli_map.metadata.get("help_error", "").startswith("AUTH_REQUIRED:")
-        or "AUTH_REQUIRED:" in cli_map.metadata.get("help_error", "")
-    )
+    assert cli_map.metadata.get("help_error", "").startswith(
+        "AUTH_REQUIRED:"
+    ) or "AUTH_REQUIRED:" in cli_map.metadata.get("help_error", "")
 
 
 def test_auth_required_help_raises_in_strict_mode(monkeypatch, tmp_path: Path) -> None:

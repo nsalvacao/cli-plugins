@@ -57,7 +57,9 @@ EXAMPLES
         assert "npm install" in cmd.examples
         assert "npm install sax" in cmd.examples
         assert all(not ex.lower().startswith("for more information") for ex in cmd.examples)
-        assert all("install dependencies from package.json." not in ex.lower() for ex in cmd.examples)
+        assert all(
+            "install dependencies from package.json." not in ex.lower() for ex in cmd.examples
+        )
 
     def test_examples_with_left_aligned_prose_still_extract_commands(self):
         manpage_text = """TOOL(1)                      user manual                     TOOL(1)

@@ -71,9 +71,11 @@ def crawl_cli(
     logger.info("Help pattern: %s (manpage=%s)", detection.pattern, detection.is_manpage)
 
     root_help = "" if detection.pattern == "auth_required" else detection.result.stdout
-    parse_input, progressive_loading, raw_line_count, parsed_line_count = _apply_progressive_loading(
-        root_help,
-        config.raw_threshold,
+    parse_input, progressive_loading, raw_line_count, parsed_line_count = (
+        _apply_progressive_loading(
+            root_help,
+            config.raw_threshold,
+        )
     )
     progressive_warning = ""
     if progressive_loading:

@@ -28,7 +28,9 @@ def test_long_help_activates_progressive_loading(monkeypatch, tmp_path: Path) ->
 
     seen: dict[str, int] = {}
 
-    def _fake_parse(text: str, _cli: str, command_path: str, force_manpage: bool = False) -> ParseResult:
+    def _fake_parse(
+        text: str, _cli: str, command_path: str, force_manpage: bool = False
+    ) -> ParseResult:
         del force_manpage
         seen["parsed_lines"] = len(text.splitlines())
         return ParseResult(
