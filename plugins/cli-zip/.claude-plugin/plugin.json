@@ -1,0 +1,10 @@
+{
+  "name": "cli-zip",
+  "version": "2.91",
+  "description": "Command reference plugin for zip CLI",
+  "keywords": [
+    "zip"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

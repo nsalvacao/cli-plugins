@@ -1,122 +1,66 @@
 ---
 name: cli-git
 description: >-
-  This skill should be used when the user needs help with git CLI commands, including add, bisect, branch, clone, commit, diff, fetch, grep, init, log, merge, mv, pull, push, rebase, reset, restore, rm, show, status, switch, tag. Covers flags, subcommands, usage patterns, and troubleshooting for all 22 git commands.
+  This skill should be used when the user needs help with git CLI commands, flags, and troubleshooting.
 ---
 
 # git CLI Reference
 
-Expert command reference for **git** v2.43.0.
+Compact command reference for **git** v2.43.0.
 
-- **22** commands (0 with subcommands)
+- **22** total commands
 - **441** command flags + **0** global flags
-- **126** usage examples
+- **31** extracted usage examples
 - Max nesting depth: 0
 
 ## When to Use
 
-This skill applies when:
 - Constructing or validating `git` commands
-- Looking up flags, options, or subcommands
-- Troubleshooting `git` invocations or errors
-- Needing correct syntax for `git` operations
+- Looking up flags/options fast
+- Troubleshooting failed invocations
 
-## Prerequisites
+## Top-Level Commands
 
-Ensure `git` is installed and available on PATH.
-
-## Quick Reference
-
-| Command | Description |
-| --- | --- |
-| `git add` | Add file contents to the index |
-| `git bisect` | Use binary search to find the commit that introduced a bug |
-| `git branch` | List, create, or delete branches |
-| `git clone` | Clone a repository into a new directory |
-| `git commit` | Record changes to the repository |
-| `git diff` | Show changes between commits, commit and working tree, etc |
-| `git fetch` | Download objects and refs from another repository |
-| `git grep` | Print lines matching a pattern |
-| `git init` | Create an empty Git repository or reinitialize an existing one |
-| `git log` | Show commit logs |
-| `git merge` | or: git merge --abort |
-| `git mv` | Move or rename a file, a directory, or a symlink |
-| `git pull` | Fetch from and integrate with another repository or a local branch |
-| `git push` | Update remote refs along with associated objects |
-| `git rebase` | Reapply commits on top of another base tip |
-| `git reset` | fatal: not a git repository (or any parent up to mount point /mnt) |
-| `git restore` | Restore working tree files |
-| `git rm` | Remove files from the working tree and from the index |
-| `git show` | Show various types of objects |
-| `git status` | Show the working tree status |
-| `git switch` | Switch branches |
-| `git tag` | Create, list, delete or verify a tag object signed with GPG |
+Standalone Commands:
+`add`, `bisect`, `branch`, `clone`, `commit`, `diff`, `fetch`, `grep`, `init`, `log`, `merge`, `mv`, `pull`, `push`, `rebase`, `reset`, `restore`, `rm`, `show`, `status`, `switch`, `tag`
+Command format examples: `git add`, `git bisect`, `git branch`
 
 ### Global Flags
 
+_No global flags detected._
 
-
-## Command Overview
-
-
-### Commands
-
-`add`, `bisect`, `branch`, `clone`, `commit`, `diff`, `fetch`, `grep`, `init`, `log`, `merge`, `mv`, `pull`, `push`, `rebase`, `reset`, `restore`, `rm`, `show`, `status`, `switch`, `tag`
-
-## Common Usage Patterns
+## Common Usage Patterns (Compact)
 
 ```bash
-git add Documentation/\*.txt
+o   Adds content from all *.txt files under Documentation directory and its subdirectories:
 ```
-Note that the asterisk * is quoted from the shell in this example; this lets the command include the files
+o   Considers adding content from all git-*.sh scripts:
 
 ```bash
-from subdirectories of Documentation/ directory.
+o   Clone from upstream:
 ```
-git add git-*.sh
+o   Make a local clone that borrows from the current directory, without checking things out:
 
 ```bash
-Because this example lets the shell expand the asterisk (i.e. you are listing the files explicitly), it
+o   Clone from upstream while borrowing from an existing local directory:
 ```
-does not consider subdir/git-foo.sh.
+o   Create a bare repository to publish your changes to the public:
 
 ```bash
-git bisect start HEAD v1.2 --      # HEAD is bad, v1.2 is good
+staging area called the "index" with git add. A file can be reverted back, only in the index but not in the
 ```
-git bisect run make                # "make" builds the app
+working tree, to that of the last commit with git restore --staged <file>, which effectively reverts git add
 
 ```bash
-git bisect reset                   # quit the bisect session
+and prevents the changes to this file from participating in the next commit. After building the state to be
 ```
-git bisect start HEAD origin --    # HEAD is bad, origin is good
-
-```bash
-git bisect run make test           # "make test" builds and tests
-```
-git bisect reset                   # quit the bisect session
-
-```bash
-cat ~/test.sh
-```
-make || exit 125                     # this skips broken builds
-
-```bash
-git bisect start HEAD HEAD~10 --   # culprit is among the last 10
-```
-git bisect run ~/test.sh
+committed incrementally with these commands, git commit (without any pathname parameter) is used to record
 
 ## Detailed References
 
-For complete command documentation including all flags and subcommands:
-- **Full command tree:** see `references/commands.md`
-- **All usage examples:** see `references/examples.md`
+- Full command tree: `references/commands.md`
+- Full examples catalog: `references/examples.md`
 
-## Troubleshooting
+## Re-Scanning
 
-- Use `git --help` or `git <command> --help` for inline help
-- Add `--verbose` for detailed output during debugging
-
-## Re-scanning
-
-To update this plugin after a CLI version change, run the `/scan-cli` command
-or manually execute the crawler and generator.
+After a CLI update, run `/scan-cli` or execute crawler + generator again.

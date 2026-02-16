@@ -1,0 +1,10 @@
+{
+  "name": "cli-node",
+  "version": "25.2.1",
+  "description": "Command reference plugin for node CLI",
+  "keywords": [
+    "node"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "cli-yq",
+  "version": "1.7",
+  "description": "Command reference plugin for yq CLI",
+  "keywords": [
+    "yq"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

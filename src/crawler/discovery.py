@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import logging
+import threading
 from dataclasses import dataclass, field
 
 from .config import CLIConfig
@@ -22,6 +23,45 @@ class CrawlState:
     depth: int = 0
     errors: int = 0
     warnings: list[str] = field(default_factory=list)
+    lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+
+    def mark_visited(self, command_path: str) -> bool:
+        """Atomically mark a command as visited.
+
+        Returns True when the command was newly added, False if it was already visited.
+        """
+        with self.lock:
+            if command_path in self.visited:
+                return False
+            self.visited.add(command_path)
+            return True
+
+    def set_raw_output(self, command_path: str, output: str) -> None:
+        """Atomically store raw help output for a command path."""
+        with self.lock:
+            self.raw_outputs[command_path] = output
+
+    def get_raw_output(self, command_path: str) -> str:
+        """Atomically fetch raw help output for a command path."""
+        with self.lock:
+            return self.raw_outputs.get(command_path, "")
+
+    def increment_errors(self) -> None:
+        """Atomically increment parse/crawl error counter."""
+        with self.lock:
+            self.errors += 1
+
+    def add_warning(self, warning: str) -> None:
+        """Atomically append a warning."""
+        with self.lock:
+            self.warnings.append(warning)
+
+    def extend_warnings(self, warnings: list[str]) -> None:
+        """Atomically append many warnings."""
+        if not warnings:
+            return
+        with self.lock:
+            self.warnings.extend(warnings)
 
 
 def discover_and_crawl(
@@ -55,10 +95,9 @@ def discover_and_crawl(
         futures = {}
         for subcmd_name in subcommand_names:
             full_path = f"{parent_path} {subcmd_name}"
-            if full_path in state.visited:
+            if not state.mark_visited(full_path):
                 logger.debug("Skipping visited: %s", full_path)
                 continue
-            state.visited.add(full_path)
 
             future = pool.submit(
                 _crawl_single_subcommand,
@@ -82,8 +121,8 @@ def discover_and_crawl(
                     name, cmd = result
                     results[name] = cmd
             except Exception as e:
-                state.errors += 1
-                state.warnings.append(f"Error crawling {parent_path} {subcmd_name}: {e}")
+                state.increment_errors()
+                state.add_warning(f"Error crawling {parent_path} {subcmd_name}: {e}")
                 logger.warning("Error crawling %s %s: %s", parent_path, subcmd_name, e)
 
     return results
@@ -115,11 +154,18 @@ def _crawl_single_subcommand(
     )
 
     if not detection.result.stdout.strip():
-        state.warnings.append(f"No help output for: {full_path}")
+        stderr_msg = detection.result.stderr.strip()
+        if detection.pattern == "auth_required" and stderr_msg:
+            state.add_warning(stderr_msg)
+            logger.warning("Auth required for %s help: %s", full_path, stderr_msg)
+        elif stderr_msg:
+            state.add_warning(stderr_msg)
+            logger.warning("No usable help for %s: %s", full_path, stderr_msg)
+        state.add_warning(f"No help output for: {full_path}")
         return None
 
     # Detect when subcommand returns identical help as parent (echoed parent)
-    parent_raw = state.raw_outputs.get(parent_path, "")
+    parent_raw = state.get_raw_output(parent_path)
     is_echoed = parent_raw and detection.result.stdout.strip() == parent_raw.strip()
 
     if is_echoed:
@@ -132,7 +178,7 @@ def _crawl_single_subcommand(
             description=desc,
             confidence=0.6,
         )
-        state.raw_outputs[full_path] = detection.result.stdout
+        state.set_raw_output(full_path, detection.result.stdout)
         return subcmd_name, cmd
 
     # Parse the help output
@@ -144,17 +190,19 @@ def _crawl_single_subcommand(
     )
 
     # Store raw output
-    state.raw_outputs[full_path] = detection.result.stdout
+    state.set_raw_output(full_path, detection.result.stdout)
 
     # Track warnings
-    state.warnings.extend(parse_result.warnings)
+    state.extend_warnings(parse_result.warnings)
 
     cmd = parse_result.command
 
     # If cmd description is identical to parent's, prefer the parent listing one-liner
     if subcmd_name in parent_descriptions:
         parent_desc_oneliner = parent_descriptions[subcmd_name]
-        if cmd.description == state.raw_outputs.get(parent_path, "").splitlines()[0].strip():
+        parent_lines = state.get_raw_output(parent_path).splitlines()
+        parent_first_line = parent_lines[0].strip() if parent_lines else ""
+        if parent_first_line and cmd.description == parent_first_line:
             cmd.description = parent_desc_oneliner
 
     # Recursively crawl sub-subcommands

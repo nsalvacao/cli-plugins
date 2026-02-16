@@ -1,0 +1,10 @@
+{
+  "name": "cli-jq",
+  "version": "",
+  "description": "Command reference plugin for jq CLI",
+  "keywords": [
+    "jq"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

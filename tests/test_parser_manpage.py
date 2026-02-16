@@ -33,3 +33,51 @@ class TestManpageParsing:
     def test_confidence(self, git_commit_help):
         cmd, _ = parse_manpage(git_commit_help, "git", "git commit")
         assert cmd.confidence >= 0.60
+
+    def test_npm_style_examples_are_extracted(self):
+        manpage_text = """NPM-INSTALL(1)                   npm manual                   NPM-INSTALL(1)
+
+NAME
+       npm-install - Install a package
+
+SYNOPSIS
+       npm install [<package-spec> ...]
+
+EXAMPLES
+       npm install
+           Install dependencies from package.json.
+
+       $ npm install sax
+           Install the sax package.
+
+       For more information, see npm help install.
+"""
+
+        cmd, _ = parse_manpage(manpage_text, "npm", "npm install")
+        assert "npm install" in cmd.examples
+        assert "npm install sax" in cmd.examples
+        assert all(not ex.lower().startswith("for more information") for ex in cmd.examples)
+        assert all(
+            "install dependencies from package.json." not in ex.lower() for ex in cmd.examples
+        )
+
+    def test_examples_with_left_aligned_prose_still_extract_commands(self):
+        manpage_text = """TOOL(1)                      user manual                     TOOL(1)
+
+NAME
+       tool - Demo tool
+
+SYNOPSIS
+       tool [OPTIONS]
+
+EXAMPLES
+This section shows practical usage.
+       tool run --fast
+           Run quickly.
+       $ tool check
+           Validate current project.
+"""
+
+        cmd, _ = parse_manpage(manpage_text, "tool", "tool")
+        assert "tool run --fast" in cmd.examples
+        assert "tool check" in cmd.examples

@@ -101,3 +101,14 @@ class TestSegmentHelpText:
         types = [s.type for s in sections]
         assert SectionType.ARGUMENTS in types
         assert SectionType.FLAGS in types
+
+    def test_pipe_table_without_box_markers_is_not_stripped(self):
+        text = """
+| Command | Description |
+| --- | --- |
+| run | Run the service |
+"""
+        sections = segment_help_text(text)
+        assert sections
+        assert "| Command | Description |" in sections[0].content
+        assert "| run | Run the service |" in sections[0].content

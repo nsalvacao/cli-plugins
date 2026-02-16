@@ -82,6 +82,22 @@ class TestFullParse:
         assert "--port" in names
         assert "--host" in names
 
+    def test_parse_unicode_richclick_flags(self):
+        help_text = """
+Usage: demo [OPTIONS]
+
+╭─ Options ───────────────────────────────╮
+│ --port INTEGER  Port to listen on       │
+│ --host TEXT     Host interface          │
+│ --debug         Enable debug mode       │
+╰─────────────────────────────────────────╯
+"""
+        result = parse_help_output(help_text, "demo", "demo")
+        names = [f.name for f in result.command.flags]
+        assert "--port" in names
+        assert "--host" in names
+        assert "--debug" in names
+
 
 class TestOutputSchema:
     def test_json_output_exists(self):
@@ -93,8 +109,10 @@ class TestOutputSchema:
             if f.name.endswith(".raw.json"):
                 continue
             data = json.loads(f.read_text(encoding="utf-8"))
+            if "cli_name" not in data:
+                # Allow auxiliary reports (e.g., config-audit.json) in output/.
+                continue
             # Verify required top-level keys
-            assert "cli_name" in data
             assert "cli_version" in data
             assert "metadata" in data
             assert "commands" in data

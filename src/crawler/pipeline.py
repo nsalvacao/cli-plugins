@@ -19,6 +19,21 @@ from .version import detect_version
 logger = logging.getLogger("cli_crawler")
 
 
+def _resolve_output_path(output: str | Path, cli_name: str) -> Path:
+    """Resolve CLI output target.
+
+    Accepts either:
+    - a directory path (legacy behavior) -> <dir>/<cli_name>.json
+    - a JSON file path -> exact file path
+    """
+    output_path = Path(output)
+    if output_path.exists() and output_path.is_dir():
+        return output_path / f"{cli_name}.json"
+    if output_path.suffix.lower() == ".json":
+        return output_path
+    return output_path / f"{cli_name}.json"
+
+
 def crawl_cli(
     cli_name: str,
     config: CLIConfig,
@@ -39,16 +54,40 @@ def crawl_cli(
 
     # 3. Detect help pattern
     detection = detect_help_pattern(cli_name, executor, config)
+    help_error = ""
+    if detection.pattern == "auth_required":
+        help_error = detection.result.stderr.strip() or (
+            "AUTH_REQUIRED: Help command requires authentication."
+        )
+        logger.error(help_error)
+        if strict:
+            raise RuntimeError(help_error)
+
     if detection.pattern == "unknown":
-        logger.error("No help output found for %s", cli_name)
+        logger.warning("No standard help output for %s; running in degraded mode.", cli_name)
         if strict:
             raise RuntimeError(f"No help output found for {cli_name}")
 
     logger.info("Help pattern: %s (manpage=%s)", detection.pattern, detection.is_manpage)
 
+    root_help = "" if detection.pattern == "auth_required" else detection.result.stdout
+    parse_input, progressive_loading, raw_line_count, parsed_line_count = (
+        _apply_progressive_loading(
+            root_help,
+            config.raw_threshold,
+        )
+    )
+    progressive_warning = ""
+    if progressive_loading:
+        progressive_warning = (
+            "Progressive loading enabled for "
+            f"{cli_name}: parsed {parsed_line_count}/{raw_line_count} help lines."
+        )
+        logger.warning(progressive_warning)
+
     # 4. Parse root help
     parse_result = parse_help_output(
-        detection.result.stdout,
+        parse_input,
         cli_name,
         cli_name,
         force_manpage=detection.is_manpage,
@@ -56,13 +95,19 @@ def crawl_cli(
 
     # 5. Build initial state
     state = CrawlState(visited={cli_name})
-    state.raw_outputs[cli_name] = detection.result.stdout
-    state.warnings.extend(parse_result.warnings)
+    state.set_raw_output(cli_name, root_help)
+    state.extend_warnings(parse_result.warnings)
+    if detection.pattern == "unknown":
+        state.add_warning(f"No standard help output for {cli_name}; using partial CLIMap.")
+    if help_error:
+        state.add_warning(help_error)
+    if progressive_warning:
+        state.add_warning(progressive_warning)
 
     # 6. Separate global flags from local flags
     global_flags, local_flags = _separate_global_flags(
         parse_result.command.flags,
-        detection.result.stdout,
+        parse_input,
     )
 
     # 7. Discover plugins if configured
@@ -97,6 +142,14 @@ def crawl_cli(
     # 9. Compute meta
     duration = time.monotonic() - start
     meta = _compute_meta(subtree, duration, state, global_flags)
+    meta["confidence_score"] = (
+        f"{_compute_confidence_score(parse_result.command.confidence, detection.pattern, state, progressive_loading):.2f}"
+    )
+    meta["progressive_loading"] = "true" if progressive_loading else "false"
+    meta["raw_line_count"] = str(raw_line_count)
+    meta["parsed_line_count"] = str(parsed_line_count)
+    if help_error:
+        meta["help_error"] = help_error
 
     # 10. Assemble CLIMap
     # 10. Assemble CLIMap
@@ -155,6 +208,48 @@ def crawl_all(
                 raise
 
     return results
+
+
+def _apply_progressive_loading(
+    raw_text: str,
+    threshold_lines: int,
+) -> tuple[str, bool, int, int]:
+    """Return parse input with optional line-based truncation for very long help."""
+    if not raw_text:
+        return "", False, 0, 0
+
+    lines = raw_text.splitlines()
+    raw_line_count = len(lines)
+    if threshold_lines <= 0 or raw_line_count <= threshold_lines:
+        return raw_text, False, raw_line_count, raw_line_count
+
+    truncated = "\n".join(lines[:threshold_lines]).rstrip()
+    truncated = (
+        f"{truncated}\n\n[... truncated by cli-crawler after {threshold_lines} lines "
+        f"(original: {raw_line_count}) ...]"
+    )
+    return truncated, True, raw_line_count, threshold_lines
+
+
+def _compute_confidence_score(
+    base_confidence: float,
+    help_pattern: str,
+    state: CrawlState,
+    progressive_loading: bool,
+) -> float:
+    """Compute a crawl-level confidence score with degradation penalties."""
+    score = max(0.0, min(base_confidence, 1.0))
+
+    if help_pattern == "auth_required":
+        score = min(score, 0.25)
+    elif help_pattern == "unknown":
+        score = min(score, 0.35)
+
+    score -= min(0.25, len(state.warnings) * 0.05)
+    if progressive_loading:
+        score -= 0.05
+
+    return max(0.0, min(score, 1.0))
 
 
 def _separate_global_flags(
@@ -243,7 +338,10 @@ def main() -> None:
         "-o",
         "--output",
         default="output",
-        help="Output directory for CLIMap JSON (default: output/)",
+        help=(
+            "Output path for CLIMap JSON. Accepts either a directory "
+            "(default: output/) or a .json file path."
+        ),
     )
     parser.add_argument(
         "--raw",
@@ -278,9 +376,8 @@ def main() -> None:
         config = CrawlerConfig()
     cli_config = config.clis.get(args.cli_name, CLIConfig(name=args.cli_name))
 
-    output_dir = Path(args.output)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"{args.cli_name}.json"
+    output_path = _resolve_output_path(args.output, args.cli_name)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     cli_map = crawl_cli(
         args.cli_name,

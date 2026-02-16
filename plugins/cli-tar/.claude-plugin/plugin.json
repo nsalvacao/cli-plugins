@@ -1,0 +1,10 @@
+{
+  "name": "cli-tar",
+  "version": "",
+  "description": "Command reference plugin for tar CLI",
+  "keywords": [
+    "tar"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

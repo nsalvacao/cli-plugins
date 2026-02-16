@@ -20,7 +20,7 @@ class CLIConfig:
     max_concurrent: int = 5
     retry: int = 1
     environment: str = "wsl"
-    raw_threshold: int = 10240
+    raw_threshold: int = 10000
     group: str | None = None
     help_pattern: str | None = None
     plugins: PluginConfig | None = None
@@ -49,7 +49,7 @@ def _build_config(raw: dict) -> CrawlerConfig:
         max_concurrent=int(defaults_raw.get("max_concurrent", 5)),
         retry=int(defaults_raw.get("retry", 1)),
         environment=str(defaults_raw.get("environment", "wsl")),
-        raw_threshold=int(defaults_raw.get("raw_threshold", 10240)),
+        raw_threshold=int(defaults_raw.get("raw_threshold", 10000)),
     )
 
     clis = {}

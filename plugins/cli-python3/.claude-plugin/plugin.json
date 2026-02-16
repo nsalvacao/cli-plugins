@@ -1,0 +1,10 @@
+{
+  "name": "cli-python3",
+  "version": "3.12.3",
+  "description": "Command reference plugin for python3 CLI",
+  "keywords": [
+    "python3"
+  ],
+  "repository": "https://github.com/nsalvacao/cli-plugins",
+  "license": "MIT"
+}

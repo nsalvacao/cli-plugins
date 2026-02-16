@@ -4,17 +4,14 @@
   "description": "Command reference plugin for gh CLI",
   "keywords": [
     "gh",
-    "working",
-    "with",
-    "agent",
-    "tasks",
-    "github"
+    "project",
+    "pr",
+    "repo",
+    "issue",
+    "codespace",
+    "release",
+    "extension"
   ],
-  "author": {
-    "name": "Nuno Salvacao",
-    "email": "nuno.salvacao@gmail.com",
-    "url": "https://github.com/nsalvacao"
-  },
   "repository": "https://github.com/nsalvacao/cli-plugins",
   "license": "MIT"
 }

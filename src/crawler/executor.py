@@ -14,6 +14,17 @@ from .models import ExecutionResult
 logger = logging.getLogger("cli_crawler.executor")
 
 ANSI_RE = re.compile(r"\[[0-9;]*[a-zA-Z]|\][^]*|\[.*?[@-~]")
+AUTH_REQUIRED_RE = re.compile(
+    r"\b("
+    r"not\s+logged\s+in|please\s+log\s*in|login\s+required|"
+    r"authentication\s+required|authorization\s+required|"
+    r"requires?\s+(?:authentication|authorization|login)|"
+    r"access\s+denied|permission\s+denied|unauthorized|forbidden|"
+    r"invalid\s+(?:credential|credentials|token)|"
+    r"expired\s+token|token\s+(?:required|missing)"
+    r")\b",
+    re.IGNORECASE,
+)
 
 
 def _quote_ps_arg(arg: str) -> str:
@@ -152,3 +163,23 @@ class Executor:
         """Remove ANSI escape codes and BOM."""
         text = text.lstrip("\ufeff")  # strip BOM
         return ANSI_RE.sub("", text)
+
+
+def is_auth_required_failure(result: ExecutionResult) -> bool:
+    """Detect auth-required failures from command output."""
+    if result.exit_code == 0 and not result.timed_out:
+        return False
+    # Prefer stderr-only matching to avoid false positives from normal help text.
+    signal_text = (result.stderr or "").strip()
+    if not signal_text:
+        return False
+    return bool(AUTH_REQUIRED_RE.search(signal_text))
+
+
+def format_auth_required_error(command_hint: str) -> str:
+    """Build a structured auth-required error message."""
+    root_cli = command_hint.split()[0] if command_hint.strip() else command_hint
+    return (
+        "AUTH_REQUIRED: Help command requires authentication for "
+        f"'{command_hint}'. Run '{root_cli} auth login' and retry."
+    )
