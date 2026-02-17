@@ -1,5 +1,6 @@
 // Demo: API endpoint for testing AI review
 const express = require("express");
+const jwt = require("jsonwebtoken");
 
 function handleLogin(req, res) {
   const username = req.body.username;
@@ -16,5 +17,4 @@ function handleLogin(req, res) {
 }
 
 module.exports = { handleLogin };
-// End of test file
 
