@@ -1,6 +1,3 @@
-# AI-powered code review & PR summary (GitHub Models free tier)
-# Calls reusable workflows from nsalvacao/actions-hub
-# Zero premium requests — only Actions minutes consumed
 name: AI Review
 
 on:
@@ -12,11 +9,13 @@ jobs:
     uses: nsalvacao/actions-hub/.github/workflows/ai-code-review.yml@main
     with:
       language: "en"
-    secrets: inherit
+    secrets:
+      MODELS_PAT: ${{ secrets.MODELS_PAT }}
 
   pr-summary:
     uses: nsalvacao/actions-hub/.github/workflows/ai-pr-summary.yml@main
     with:
       language: "en"
-    secrets: inherit
+    secrets:
+      MODELS_PAT: ${{ secrets.MODELS_PAT }}
 
