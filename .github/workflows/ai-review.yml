@@ -2,20 +2,91 @@ name: AI Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to review
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
-  code-review:
-    uses: nsalvacao/actions-hub/.github/workflows/ai-code-review.yml@main
-    with:
-      language: "en"
-    secrets:
-      MODELS_PAT: ${{ secrets.MODELS_PAT }}
+  ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  pr-summary:
-    uses: nsalvacao/actions-hub/.github/workflows/ai-pr-summary.yml@main
-    with:
-      language: "en"
-    secrets:
-      MODELS_PAT: ${{ secrets.MODELS_PAT }}
+      - name: Get PR diff
+        id: diff
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PR_NUM=${{ inputs.pr_number }}
+          else
+            PR_NUM=${{ github.event.pull_request.number }}
+          fi
+          echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
+
+          git diff ${{ github.event.pull_request.base.sha || github.sha }}~1...${{ github.sha }} -- "*.js" "*.ts" "*.py" "*.yml" > diff.txt 2>/dev/null || true
+          if [ ! -s diff.txt ]; then
+            git log --oneline -5 --all 2>/dev/null || true
+            git diff HEAD~1 > diff.txt 2>/dev/null || echo "no diff" > diff.txt
+          fi
+          head -c 6000 diff.txt > diff_trunc.txt
+          echo "has_diff=$([ -s diff_trunc.txt ] && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "diff_size=$(wc -c < diff_trunc.txt)" >> $GITHUB_OUTPUT
+
+      - name: AI Review via GitHub Models
+        if: steps.diff.outputs.has_diff == 'true'
+        id: review
+        env:
+          GH_MODELS_TOKEN: ${{ secrets.MODELS_PAT }}
+        run: |
+          DIFF=$(cat diff_trunc.txt)
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://models.github.ai/inference/chat/completions" \
+            -H "Authorization: Bearer $GH_MODELS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg diff "$DIFF" '{
+              model: "openai/gpt-4.1-mini",
+              messages: [
+                {role: "system", content: "Senior code reviewer. Review for security, bugs, best practices. Use markdown with 🔴 Critical 🟡 Warning 🔵 Info. Be concise."},
+                {role: "user", content: ("Review this PR diff:\n\n" + $diff)}
+              ],
+              max_tokens: 1500,
+              temperature: 0.2
+            }')")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Models API returned HTTP $HTTP_CODE"
+            echo "$BODY"
+            exit 1
+          fi
+          
+          echo "$BODY" | jq -r '.choices[0].message.content' > review.md
+          TOKENS=$(echo "$BODY" | jq '.usage.total_tokens')
+          echo "tokens=$TOKENS" >> $GITHUB_OUTPUT
+
+      - name: Post review comment
+        if: steps.diff.outputs.has_diff == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('review.md', 'utf8');
+            const tokens = '${{ steps.review.outputs.tokens }}';
+            const prNum = parseInt('${{ steps.diff.outputs.pr_number }}') || context.issue.number;
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: prNum,
+              body: `## 🔍 AI Code Review\n\n${review}\n\n---\n*🤖 gpt-4.1-mini · ${tokens} tokens · GitHub Models free tier · 0 premium requests*`
+            });
 
