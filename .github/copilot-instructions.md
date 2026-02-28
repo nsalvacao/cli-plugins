@@ -62,9 +62,9 @@ ruff format src/
 pytest tests/ -v --tb=short -x
 ```
 
-### Known CI issue
+### Known CI issue (bug)
 
-The CI workflow (`.github/workflows/ci.yml`) runs `ruff check src/ tests/` and `pytest tests/`, but the `tests/` directory is listed in `.gitignore` and is **not committed to the repository**. This causes CI to fail with:
+The CI workflow (`.github/workflows/ci.yml`) runs `ruff check src/ tests/` and `pytest tests/`, but the `tests/` directory is listed in `.gitignore` and is **not committed to the repository**. This is a known bug that causes CI to fail with:
 
 ```
 E902 No such file or directory (os error 2)
@@ -107,7 +107,7 @@ E902 No such file or directory (os error 2)
 - **Never use `shell=True`** in subprocess calls. Always pass commands as lists.
 - PowerShell arguments are single-quoted via `_quote_ps_arg()` in `src/crawler/executor.py` to prevent command injection.
 - `SAFE_ENV` dictionary (defined in both `src/crawler/executor.py` and `src/lib/subprocess_utils.py`) standardises subprocess environment to suppress colours and pagers: `NO_COLOR=1`, `PAGER=cat`, `TERM=dumb`, `LANG=C`, `LC_ALL=C`, `GIT_PAGER=cat`, `MANPAGER=cat`, `MANWIDTH=120`, `COLUMNS=120`.
-- If you update SAFE_ENV in one file, update the other to match (both files note this requirement).
+- `SAFE_ENV` is currently duplicated across the two files above. If you update one, update the other to match (both files document this requirement in comments).
 
 ### Logging
 
