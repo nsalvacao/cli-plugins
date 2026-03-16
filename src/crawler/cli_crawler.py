@@ -24,16 +24,16 @@ def _normalize_legacy_args(argv: list[str]) -> tuple[list[str], list[str]]:
 
     for arg in argv:
         if arg == _RAW_FLAG:
+            if not raw_enabled:
+                normalized.append(arg)
             raw_enabled = True
-            normalized.append(arg)
-            continue
-        if arg == _LEGACY_RAW_FLAG:
+        elif arg == _LEGACY_RAW_FLAG:
             legacy_raw_seen = True
             if not raw_enabled:
                 normalized.append(_RAW_FLAG)
                 raw_enabled = True
-            continue
-        normalized.append(arg)
+        else:
+            normalized.append(arg)
 
     if legacy_raw_seen:
         if _RAW_FLAG in argv:
