@@ -147,14 +147,14 @@ plugins/cli-docker/
 ### 4. Install/Use in Claude Code
 
 ```bash
-cp -r plugins/cli-docker ~/.claude/plugins/cli-docker
+mkdir -p ~/.claude/plugins && cp -r plugins/cli-docker ~/.claude/plugins/
 ```
 
 > **If this fails**
 >
-> - Create target directory first (`mkdir -p ~/.claude/plugins`).
 > - Confirm plugin manifest exists (`ls -l plugins/cli-docker/.claude-plugin/plugin.json`).
-> - Re-copy plugin folder and retry.
+> - Verify you have permissions to write to `~/.claude/plugins`.
+> - If issues persist, remove the destination and retry the copy.
 
 Or test directly:
 
