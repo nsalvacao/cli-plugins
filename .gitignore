@@ -33,3 +33,7 @@ specs/
 tests/
 .repo-audit-2026-02-12.md
 AGENTS.md
+.solution-audit-2026-03-06.json
+.solution-audit-2026-03-16.json
+.solution-audit-latest.json
+SOLUTION_AUDIT_REPORT.md
