@@ -13,11 +13,12 @@ from .detector import detect_help_pattern
 from .discovery import CrawlState, discover_and_crawl, discover_plugins
 from .executor import Executor
 from .formatter import write_output
-from .models import CLIMap, Flag
+from .models import CLIMap, Flag, HelpDetectionResult
 from .parser import parse_help_output
 from .version import detect_version
 
 logger = logging.getLogger("cli_crawler")
+ROOT_CLI_NOT_FOUND_EXIT_CODE = 2
 
 
 class RootCLIBinaryNotFoundError(RuntimeError):
@@ -74,15 +75,11 @@ def crawl_cli(
             raise RuntimeError(help_error)
 
     if detection.pattern == "unknown":
-        logger.warning(
-            "No standard help output for %s; running in degraded mode.", cli_name
-        )
+        logger.warning("No standard help output for %s; running in degraded mode.", cli_name)
         if strict:
             raise RuntimeError(f"No help output found for {cli_name}")
 
-    logger.info(
-        "Help pattern: %s (manpage=%s)", detection.pattern, detection.is_manpage
-    )
+    logger.info("Help pattern: %s (manpage=%s)", detection.pattern, detection.is_manpage)
 
     root_help = "" if detection.pattern == "auth_required" else detection.result.stdout
     parse_input, progressive_loading, raw_line_count, parsed_line_count = (
@@ -112,9 +109,7 @@ def crawl_cli(
     state.set_raw_output(cli_name, root_help)
     state.extend_warnings(parse_result.warnings)
     if detection.pattern == "unknown":
-        state.add_warning(
-            f"No standard help output for {cli_name}; using partial CLIMap."
-        )
+        state.add_warning(f"No standard help output for {cli_name}; using partial CLIMap.")
     if help_error:
         state.add_warning(help_error)
     if progressive_warning:
@@ -197,21 +192,13 @@ def crawl_cli(
     return cli_map
 
 
-def _is_missing_root_cli_binary(cli_name: str, detection_result: object) -> bool:
+def _is_missing_root_cli_binary(cli_name: str, detection_result: HelpDetectionResult) -> bool:
     """Return True when root CLI execution indicates missing binary."""
-    result = getattr(detection_result, "result", None)
-    if result is None:
+    result = detection_result.result
+    if not result.command or result.command[0] != cli_name:
         return False
 
-    command = getattr(result, "command", [])
-    if not command or command[0] != cli_name:
-        return False
-
-    signal_text = " ".join(
-        part
-        for part in [getattr(result, "stderr", ""), getattr(result, "stdout", "")]
-        if part
-    ).lower()
+    signal_text = " ".join(part for part in [result.stderr, result.stdout] if part).lower()
     missing_markers = (
         "command not found",
         "not recognized as an internal or external command",
@@ -368,9 +355,7 @@ def main() -> None:
         prog="cli-crawler",
         description="Crawl CLI --help outputs and produce structured CLIMap JSON.",
     )
-    parser.add_argument(
-        "--version", action="version", version=f"cli-crawler {pkg_version}"
-    )
+    parser.add_argument("--version", action="version", version=f"cli-crawler {pkg_version}")
     parser.add_argument(
         "cli_name",
         help="Name of the CLI to crawl (e.g. docker, git, gh)",
@@ -430,7 +415,7 @@ def main() -> None:
         )
     except RootCLIBinaryNotFoundError as exc:
         logger.error("%s", exc)
-        sys.exit(2)
+        sys.exit(ROOT_CLI_NOT_FOUND_EXIT_CODE)
 
     print(f"CLIMap written to: {output_path}")
     print(f"  Commands: {cli_map.metadata.get('total_commands', 0)}")
