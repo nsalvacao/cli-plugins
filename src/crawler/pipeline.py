@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -17,6 +18,10 @@ from .parser import parse_help_output
 from .version import detect_version
 
 logger = logging.getLogger("cli_crawler")
+
+
+class RootCLIBinaryNotFoundError(RuntimeError):
+    """Raised when the root CLI binary cannot be resolved/executed."""
 
 
 def _resolve_output_path(output: str | Path, cli_name: str) -> Path:
@@ -54,6 +59,11 @@ def crawl_cli(
 
     # 3. Detect help pattern
     detection = detect_help_pattern(cli_name, executor, config)
+    if _is_missing_root_cli_binary(cli_name, detection):
+        raise RootCLIBinaryNotFoundError(
+            f"Root CLI binary '{cli_name}' was not found. Ensure it is installed and in PATH."
+        )
+
     help_error = ""
     if detection.pattern == "auth_required":
         help_error = detection.result.stderr.strip() or (
@@ -64,11 +74,15 @@ def crawl_cli(
             raise RuntimeError(help_error)
 
     if detection.pattern == "unknown":
-        logger.warning("No standard help output for %s; running in degraded mode.", cli_name)
+        logger.warning(
+            "No standard help output for %s; running in degraded mode.", cli_name
+        )
         if strict:
             raise RuntimeError(f"No help output found for {cli_name}")
 
-    logger.info("Help pattern: %s (manpage=%s)", detection.pattern, detection.is_manpage)
+    logger.info(
+        "Help pattern: %s (manpage=%s)", detection.pattern, detection.is_manpage
+    )
 
     root_help = "" if detection.pattern == "auth_required" else detection.result.stdout
     parse_input, progressive_loading, raw_line_count, parsed_line_count = (
@@ -98,7 +112,9 @@ def crawl_cli(
     state.set_raw_output(cli_name, root_help)
     state.extend_warnings(parse_result.warnings)
     if detection.pattern == "unknown":
-        state.add_warning(f"No standard help output for {cli_name}; using partial CLIMap.")
+        state.add_warning(
+            f"No standard help output for {cli_name}; using partial CLIMap."
+        )
     if help_error:
         state.add_warning(help_error)
     if progressive_warning:
@@ -179,6 +195,29 @@ def crawl_cli(
     )
 
     return cli_map
+
+
+def _is_missing_root_cli_binary(cli_name: str, detection_result: object) -> bool:
+    """Return True when root CLI execution indicates missing binary."""
+    result = getattr(detection_result, "result", None)
+    if result is None:
+        return False
+
+    command = getattr(result, "command", [])
+    if not command or command[0] != cli_name:
+        return False
+
+    signal_text = " ".join(
+        part
+        for part in [getattr(result, "stderr", ""), getattr(result, "stdout", "")]
+        if part
+    ).lower()
+    missing_markers = (
+        "command not found",
+        "not recognized as an internal or external command",
+        "no such file or directory",
+    )
+    return any(marker in signal_text for marker in missing_markers)
 
 
 def crawl_all(
@@ -329,7 +368,9 @@ def main() -> None:
         prog="cli-crawler",
         description="Crawl CLI --help outputs and produce structured CLIMap JSON.",
     )
-    parser.add_argument("--version", action="version", version=f"cli-crawler {pkg_version}")
+    parser.add_argument(
+        "--version", action="version", version=f"cli-crawler {pkg_version}"
+    )
     parser.add_argument(
         "cli_name",
         help="Name of the CLI to crawl (e.g. docker, git, gh)",
@@ -379,13 +420,18 @@ def main() -> None:
     output_path = _resolve_output_path(args.output, args.cli_name)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    cli_map = crawl_cli(
-        args.cli_name,
-        cli_config,
-        output_path,
-        include_raw=args.raw,
-        strict=args.strict,
-    )
+    try:
+        cli_map = crawl_cli(
+            args.cli_name,
+            cli_config,
+            output_path,
+            include_raw=args.raw,
+            strict=args.strict,
+        )
+    except RootCLIBinaryNotFoundError as exc:
+        logger.error("%s", exc)
+        sys.exit(2)
+
     print(f"CLIMap written to: {output_path}")
     print(f"  Commands: {cli_map.metadata.get('total_commands', 0)}")
     print(f"  Flags:    {cli_map.metadata.get('total_flags', 0)}")
