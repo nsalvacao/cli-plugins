@@ -74,6 +74,7 @@ def group_commands(tree: dict) -> dict[str, list[str]]:
 # ---------------------------------------------------------------------------
 
 REQUIRED_KEYS = {"cli_name", "commands", "metadata"}
+CLI_USER_ERROR_EXIT_CODE = 2
 
 
 def load_cli_map(path: str | Path) -> dict:
@@ -862,7 +863,21 @@ def main() -> None:
         format="%(levelname)s: %(message)s",
     )
 
-    cli_map = load_cli_map(args.json_path)
+    try:
+        cli_map = load_cli_map(args.json_path)
+    except FileNotFoundError:
+        parser.exit(
+            CLI_USER_ERROR_EXIT_CODE,
+            f"Error: input JSON file not found: {args.json_path}\n",
+        )
+    except json.JSONDecodeError as exc:
+        parser.exit(
+            CLI_USER_ERROR_EXIT_CODE,
+            f"Error: invalid JSON in input file {args.json_path}: {exc.msg}\n",
+        )
+    except ValueError as exc:
+        parser.exit(CLI_USER_ERROR_EXIT_CODE, f"Error: {exc}\n")
+
     plugin_root = generate_plugin(
         cli_map,
         args.output,
