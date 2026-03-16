@@ -53,3 +53,30 @@ def test_main_exits_non_zero_when_root_cli_binary_is_missing(
         pipeline.main()
 
     assert exc.value.code == pipeline.ROOT_CLI_NOT_FOUND_EXIT_CODE
+
+
+def test_crawl_cli_fails_fast_when_root_binary_is_not_in_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """crawl_cli should fail before detection when binary is not resolvable."""
+    missing_cli = "definitely-missing-cli"
+    config = CLIConfig(name=missing_cli)
+    calls: dict[str, bool] = {"detect_version": False, "detect_help_pattern": False}
+
+    monkeypatch.setattr(pipeline.shutil, "which", lambda _cli_name: None)
+
+    def _detect_version(*_args: object, **_kwargs: object) -> str:
+        calls["detect_version"] = True
+        return ""
+
+    def _detect_help_pattern(*_args: object, **_kwargs: object) -> HelpDetectionResult:
+        calls["detect_help_pattern"] = True
+        raise AssertionError("detect_help_pattern should not be called")
+
+    monkeypatch.setattr(pipeline, "detect_version", _detect_version)
+    monkeypatch.setattr(pipeline, "detect_help_pattern", _detect_help_pattern)
+
+    with pytest.raises(pipeline.RootCLIBinaryNotFoundError):
+        pipeline.crawl_cli(missing_cli, config)
+
+    assert calls == {"detect_version": False, "detect_help_pattern": False}

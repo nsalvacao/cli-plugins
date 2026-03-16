@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 import sys
 import time
 from datetime import UTC, datetime
@@ -53,6 +54,13 @@ def crawl_cli(
 
     # 1. Create executor
     executor = Executor(config)
+
+    # Fast-fail before probing: avoids locale-dependent stderr parsing for
+    # obviously missing binaries.
+    if shutil.which(cli_name) is None:
+        raise RootCLIBinaryNotFoundError(
+            f"Root CLI binary '{cli_name}' was not found. Ensure it is installed and in PATH."
+        )
 
     # 2. Detect version
     version = detect_version(cli_name, executor)
