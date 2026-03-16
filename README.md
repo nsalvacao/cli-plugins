@@ -108,17 +108,35 @@ uv sync
 # pip install -e ".[dev]"
 ```
 
+> **If this fails**
+>
+> - Verify Python 3.11+ is available (`python3 --version`).
+> - Verify `uv` is installed and on PATH (`uv --version`).
+> - If `uv sync` fails, use Option B in the same block.
+
 ### 2. Crawl a CLI
 
 ```bash
 uv run cli-crawler docker -o output/docker.json --raw -v
 ```
 
+> **If this fails**
+>
+> - Ensure the target CLI is installed and on PATH (`docker --version`).
+> - Verify the crawler entrypoint resolves (`uv run cli-crawler --help`).
+> - Remove stale output and retry (`rm -f output/docker.json`).
+
 ### 3. Generate Plugin
 
 ```bash
 uv run generate-plugin output/docker.json
 ```
+
+> **If this fails**
+>
+> - Ensure crawl output exists (`ls -l output/docker.json`).
+> - Validate JSON before generation (`python3 -m json.tool output/docker.json >/dev/null`).
+> - Verify the generator entrypoint resolves (`uv run generate-plugin --help`).
 
 Plugin output:
 
@@ -131,6 +149,12 @@ plugins/cli-docker/
 ```bash
 cp -r plugins/cli-docker ~/.claude/plugins/cli-docker
 ```
+
+> **If this fails**
+>
+> - Create target directory first (`mkdir -p ~/.claude/plugins`).
+> - Confirm plugin manifest exists (`ls -l plugins/cli-docker/.claude-plugin/plugin.json`).
+> - Re-copy plugin folder and retry.
 
 Or test directly:
 
