@@ -17,6 +17,20 @@
 
 ---
 
+## Start Here (Canonical Docs Route)
+
+If this is your first visit, **this `README.md` is the canonical onboarding path**.
+
+Follow this order:
+
+1. Stay in this file for context + Quick Start.
+2. Use [`docs/README.md`](docs/README.md) as the docs index for deeper reading.
+3. Open [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) when you are ready to contribute.
+
+This keeps first-time navigation deterministic and avoids documentation dead-ends.
+
+---
+
 ## Why This Exists
 
 LLMs are strong at reasoning, but weak on precise, current CLI syntax unless the exact tool/version is in context.
