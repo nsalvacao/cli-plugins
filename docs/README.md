@@ -59,10 +59,10 @@ cd cli-plugins
 uv sync
 
 # Crawl a CLI
-uv run python cli_crawler.py git -o output/git.json --include-raw
+uv run cli-crawler git -o output/git.json --raw
 
 # Generate the plugin
-uv run python scripts/generate_plugin.py output/git.json
+uv run generate-plugin output/git.json
 
 # Plugin ready at plugins/cli-git/
 ```
@@ -102,13 +102,13 @@ clis:
 ### Step 2: Crawl
 
 ```bash
-uv run python cli_crawler.py my-tool -o output/my-tool.json -v --include-raw
+uv run cli-crawler my-tool -o output/my-tool.json -v --raw
 ```
 
 ### Step 3: Generate
 
 ```bash
-uv run python scripts/generate_plugin.py output/my-tool.json
+uv run generate-plugin output/my-tool.json
 ```
 
 ### Step 4: Use
@@ -139,7 +139,7 @@ plugins/cli-my-tool/
 
 ## Architecture
 
-### Crawler (`crawler/`)
+### Crawler (`src/crawler/`)
 
 | Module | Purpose |
 |--------|---------|
@@ -160,7 +160,7 @@ plugins/cli-my-tool/
 | `formatter.py` | JSON serialization |
 | `version.py` | Version detection |
 
-### Generator (`scripts/generate_plugin.py`)
+### Generator (`src/generator/plugin_generator.py`)
 
 Single-file generator using Python stdlib only. Reads crawler JSON and produces a complete Claude Code plugin directory.
 
@@ -182,14 +182,14 @@ Single-file generator using Python stdlib only. Reads crawler JSON and produces 
 
 ```
 cli-plugins/
-├── cli_crawler.py          # CLI entry point
+├── pyproject.toml          # CLI entrypoints (project.scripts)
 ├── config.yaml             # CLI configurations
-├── crawler/                # Crawler modules (Phase 1)
-├── scripts/
-│   └── generate_plugin.py  # Plugin generator (Phase 2)
-├── tests/                  # All tests
-│   ├── test_*.py           # Unit + integration tests
-│   └── fixtures/           # Raw help text samples
+├── src/
+│   ├── crawler/            # Crawler modules + cli-crawler entrypoint
+│   ├── generator/          # Plugin generator (generate-plugin)
+│   ├── config/             # Inventory/config audit (config-audit)
+│   └── lib/                # Shared helpers
+├── tests/                  # Test suite
 ├── output/                 # Crawler JSON output (gitignored)
 ├── plugins/                # Generated plugins
 └── docs/                   # Documentation
@@ -219,14 +219,16 @@ bash plugins/cli-docker/scripts/rescan.sh
 Or manually:
 
 ```bash
-uv run python cli_crawler.py docker -o output/docker.json --include-raw -v
-uv run python scripts/generate_plugin.py output/docker.json
+uv run cli-crawler docker -o output/docker.json --raw -v
+uv run generate-plugin output/docker.json
 ```
 
 ### Batch Crawl
 
 ```bash
-uv run python cli_crawler.py --all --config config.yaml
+for cli in docker gh git; do
+  uv run cli-crawler "$cli" -o "output/$cli.json" --raw -v
+done
 ```
 
 ## Design Decisions
