@@ -226,7 +226,7 @@ uv run generate-plugin output/docker.json
 ### Batch Crawl
 
 ```bash
-for cli in docker gh git; do
+for cli in <cli1> <cli2> <cli3>; do
   uv run cli-crawler "$cli" -o "output/$cli.json" --raw -v
 done
 ```
