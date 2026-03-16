@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -12,11 +13,16 @@ from .detector import detect_help_pattern
 from .discovery import CrawlState, discover_and_crawl, discover_plugins
 from .executor import Executor
 from .formatter import write_output
-from .models import CLIMap, Flag
+from .models import CLIMap, Flag, HelpDetectionResult
 from .parser import parse_help_output
 from .version import detect_version
 
 logger = logging.getLogger("cli_crawler")
+ROOT_CLI_NOT_FOUND_EXIT_CODE = 2
+
+
+class RootCLIBinaryNotFoundError(RuntimeError):
+    """Raised when the root CLI binary cannot be resolved/executed."""
 
 
 def _resolve_output_path(output: str | Path, cli_name: str) -> Path:
@@ -54,6 +60,11 @@ def crawl_cli(
 
     # 3. Detect help pattern
     detection = detect_help_pattern(cli_name, executor, config)
+    if _is_missing_root_cli_binary(cli_name, detection):
+        raise RootCLIBinaryNotFoundError(
+            f"Root CLI binary '{cli_name}' was not found. Ensure it is installed and in PATH."
+        )
+
     help_error = ""
     if detection.pattern == "auth_required":
         help_error = detection.result.stderr.strip() or (
@@ -179,6 +190,21 @@ def crawl_cli(
     )
 
     return cli_map
+
+
+def _is_missing_root_cli_binary(cli_name: str, detection_result: HelpDetectionResult) -> bool:
+    """Return True when root CLI execution indicates missing binary."""
+    result = detection_result.result
+    if not result.command or result.command[0] != cli_name:
+        return False
+
+    signal_text = " ".join(part for part in [result.stderr, result.stdout] if part).lower()
+    missing_markers = (
+        "command not found",
+        "not recognized as an internal or external command",
+        "no such file or directory",
+    )
+    return any(marker in signal_text for marker in missing_markers)
 
 
 def crawl_all(
@@ -379,13 +405,18 @@ def main() -> None:
     output_path = _resolve_output_path(args.output, args.cli_name)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    cli_map = crawl_cli(
-        args.cli_name,
-        cli_config,
-        output_path,
-        include_raw=args.raw,
-        strict=args.strict,
-    )
+    try:
+        cli_map = crawl_cli(
+            args.cli_name,
+            cli_config,
+            output_path,
+            include_raw=args.raw,
+            strict=args.strict,
+        )
+    except RootCLIBinaryNotFoundError as exc:
+        logger.error("%s", exc)
+        sys.exit(ROOT_CLI_NOT_FOUND_EXIT_CODE)
+
     print(f"CLIMap written to: {output_path}")
     print(f"  Commands: {cli_map.metadata.get('total_commands', 0)}")
     print(f"  Flags:    {cli_map.metadata.get('total_flags', 0)}")
