@@ -29,7 +29,7 @@ def write_output(
     # Handle raw text
     if include_raw:
         # Embed raw text in each command node
-        _embed_raw(data.get("tree", {}), raw_outputs, cli_map.cli_name)
+        _embed_raw(data.get("commands", {}), raw_outputs)
     elif raw_outputs:
         total_raw = sum(len(v) for v in raw_outputs.values())
         # Always write separate raw sidecar for deterministic output layout.
@@ -150,11 +150,11 @@ def _serialize_envvar(ev: EnvVar) -> dict[str, Any]:
     return data
 
 
-def _embed_raw(tree: dict, raw_outputs: dict[str, str], cli_name: str) -> None:
+def _embed_raw(tree: dict[str, Any], raw_outputs: dict[str, str]) -> None:
     """Embed raw help text into each command node in the tree."""
     for name, cmd_data in tree.items():
         path = cmd_data.get("path", "")
         if path in raw_outputs:
             cmd_data["raw_help"] = raw_outputs[path]
         if "subcommands" in cmd_data:
-            _embed_raw(cmd_data["subcommands"], raw_outputs, cli_name)
+            _embed_raw(cmd_data["subcommands"], raw_outputs)

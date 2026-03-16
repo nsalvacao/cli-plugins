@@ -52,11 +52,11 @@ We love new ideas! If you have a feature request, please open an issue on our [G
     git checkout -b bugfix/fix-bug-description
     ```
 5.  **Make your changes**. Ensure your code adheres to our [Code Style Guidelines](#code-style-guidelines).
-    - For changes to the crawler (`crawler/`) or generator (`scripts/generate_plugin.py`)
+    - For changes to the crawler (`src/crawler/`) or generator (`src/generator/plugin_generator.py`)
     - For adding a new CLI configuration, edit `config.yaml` as described in the existing documentation.
-6.  **Run tests**: `uv run python -m pytest tests/ -v` to ensure everything is working as expected and all tests pass.
-7.  **Test with a real CLI**: `uv run python cli_crawler.py <cli> -o output/<cli>.json -v` to verify your changes.
-8.  **Generate a plugin**: `uv run python scripts/generate_plugin.py output/<cli>.json` and verify the output.
+6.  **Run tests**: `uv run pytest tests/ -v` to ensure everything is working as expected and all tests pass.
+7.  **Test with a real CLI**: `uv run cli-crawler <cli> -o output/<cli>.json --raw -v` to verify your changes.
+8.  **Generate a plugin**: `uv run generate-plugin output/<cli>.json` and verify the output.
 9.  **Commit your changes** using our [Commit Message Guidelines](#commit-message-guidelines).
     ```bash
     git commit -m "feat: Add new feature"
@@ -89,8 +89,8 @@ We adhere to the following code style and quality standards:
 - Keep files under 500 lines
 - Tests go in `tests/`, never in root
 - We use linters and formatters to maintain code consistency. Ensure your code passes all checks before submitting a PR.
-    - Run `uv run python -m ruff check .` for linting.
-    - Run `uv run python -m black .` for formatting.
+    - Run `uv run ruff check .` for linting.
+    - Run `uv run ruff format .` for formatting.
     - These tools are installed as part of the dev dependency group via `uv sync --group dev`.
 
 ## Commit Message Guidelines
