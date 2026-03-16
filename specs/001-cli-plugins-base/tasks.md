@@ -27,7 +27,7 @@
 
 **Purpose**: Project initialization, known structure bugs, and CI/CD — MUST complete before any user story work. CI/CD moved here from Phase 6 per constitution §CI/CD Automatizado and execution-plan A7 ("BLOCKS EVERYTHING").
 
-- [x] **T001 Createeeee project directories** - `src/crawler`, `src/generator`, `src/config`, `src/lib`, `tests/unit`, `tests/integration`, `tests/end_to_end` — decision: migrate existing `crawler/` → `src/crawler/` (preserve git history with `git mv`)
+- [x] **T001 Create project directories** - `src/crawler`, `src/generator`, `src/config`, `src/lib`, `tests/unit`, `tests/integration`, `tests/end_to_end` — decision: migrate existing `crawler/` → `src/crawler/` (preserve git history with `git mv`)
 - [x] **T002 Initialize pyproject.toml** - Python project in repository root (exists — bugs fixed in T038)
 - [x] **T038 Fix known `pyproject.toml` bugs** - move `classifiers` from `[project.urls]` to `[project]`; fix `readme` path from `docs/README.md` to `README.md`; add `[build-system]` section with `hatchling` — verify with `uv build && twine check dist/*` *(Blocker B1 — evaluation-results_v2)* ([NEW])
 - [x] **T039 Register `generate-plugin` as CLI entry point** - in `pyproject.toml` `[project.scripts]`: `generate-plugin = "generator.plugin_generator:main"` — verify `pip install -e . && generate-plugin --help` works *(Blocker B2)* ([NEW])
